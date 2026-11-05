@@ -45,7 +45,7 @@ Por função: recepção 50 planos (55%), central 19 (21%), coordenação 17 (19
 |---|---|---|
 | Apresentação "Validade do plano" (reunião com as esteticistas, 15 slides) | https://claude.ai/artifact/N6WVpPMexBvXTiEeitmrzn · PDF em `apresentacao/` | **Vigente** |
 | Alterações no Contrato (documento para a gerência) | https://claude.ai/artifact/L9v2wWCPJ7dhQ82sXT49wB | **Vigente**, aguarda decisão da gerência |
-| Planilha "Quem alterou a validade" (91 planos) | Google Sheets do usuário · cópia sem nomes de clientes em `dados/auditoria_91_planos.csv` | **Concluída** em 09/10 |
+| Planilha "Quem alterou a validade" (91 planos) | https://docs.google.com/spreadsheets/d/1xnAqRj10vH_LsChbJBa4KbcUz3YRAouUCUHCOichDKk/edit?usp=sharing · cópia sem nomes de clientes em `dados/auditoria_91_planos.csv` | **Concluída** em 09/10 |
 | Plano de ação "Descontos e Validade" (08/10) | https://claude.ai/artifact/25kUiYGYieKcm7m5PJmKqq | Base do plano de ação; o item "corrigir os 86 planos até 31/10" foi retirado depois |
 | Relatório "Desconto e Validade dos Planos" (02/10) | https://claude.ai/artifact/HqvU4sbFwRYD1D8WLxHRUH | Diagnóstico inicial (86 planos) |
 | Auditoria de Descontos — aba Validade (01/10) | https://claude.ai/artifact/TZiv3LFtGRrUFKtC8QoKiQ | Histórico 2021–2026 |

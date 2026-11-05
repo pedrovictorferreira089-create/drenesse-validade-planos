@@ -11,7 +11,7 @@
 | 08/10 | Pedido do chefe: material de conscientização para as esteticistas, com foco na **data de renovação**. Criada a apresentação "Validade do plano". |
 | 08/10 | Análise do modelo de contrato (cláusula 1, parágrafo único: plano vencido = contrato encerrado, salvo prorrogação autorizada pela Drenesse; cláusula 4: horários dentro da validade; cláusula 5: falta sem aviso). Criado o documento "Alterações no Contrato" com os pontos para a gerência; exportado em Word. |
 | 08–09/10 | Alterações pedidas na apresentação e no documento (ver abaixo). |
-| 09/10 | Descoberto no Belle onde ver quem alterou a validade (Venda de Planos → clicar no plano → Auditoria). Auditoria dos 91 planos concluída e planilha do Google preenchida. |
+| 09/10 | Descoberto no Belle onde ver quem alterou a validade (Venda de Planos → clicar no plano → Auditoria). Auditoria dos 91 planos concluída e planilha do Google preenchida (https://docs.google.com/spreadsheets/d/1xnAqRj10vH_LsChbJBa4KbcUz3YRAouUCUHCOichDKk/edit?usp=sharing). |
 
 ## Alterações pedidas pelo usuário
 
