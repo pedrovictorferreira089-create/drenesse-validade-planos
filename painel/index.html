@@ -9,6 +9,12 @@
   .av-status b, .av-lead b { font-weight: var(--cds-font-weight-medium); font-variant-numeric: tabular-nums; }
   .av-filtros { display: flex; flex-wrap: wrap; gap: var(--cds-gap-md); align-items: end; }
   .av-filtros label { display: grid; gap: var(--cds-gap-xs); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .av-data { font: inherit; color: var(--color-fg); background-color: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: 5px 8px; min-height: 34px; }
+  .av-atalhos { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm); }
+  .av-botao { font: inherit; font-size: var(--cds-font-size-caption); color: var(--color-fg); background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: 999px; padding: 6px 12px; cursor: pointer; }
+  .av-botao:hover { border-color: var(--color-fg-muted); }
+  .av-botao:focus-visible, .av-data:focus-visible { outline: 2px solid var(--color-fg); outline-offset: 2px; }
+  .av-botao.av-ativo { background: var(--color-fg); color: var(--color-bg); border-color: var(--color-fg); }
   .av-check { display: flex !important; align-items: center; gap: var(--cds-gap-xs); grid-auto-flow: column; color: var(--color-fg) !important; font-size: var(--cds-font-size-body) !important; }
   .av-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--cds-gap-md); }
   .av-kpi { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: grid; gap: var(--cds-gap-xs); align-content: start; }
@@ -67,12 +73,16 @@
   </header>
 
   <div class="av-filtros" id="filtros">
-    <label for="f-periodo">Período
-      <select class="dash-select" id="f-periodo" aria-label="Período">
-        <option value="todos">Todas as alterações</option>
-        <option value="vigencia">Só depois da regra (desde 09/10/2026)</option>
-      </select>
+    <label for="f-de">Alterado de
+      <input type="date" class="av-data" id="f-de" min="2020-01-01" max="2030-12-31" aria-label="Alterado de">
     </label>
+    <label for="f-ate">até
+      <input type="date" class="av-data" id="f-ate" min="2020-01-01" max="2030-12-31" aria-label="Alterado até">
+    </label>
+    <div class="av-atalhos">
+      <button type="button" class="av-botao" id="b-regra">Desde a regra (09/10/2026)</button>
+      <button type="button" class="av-botao" id="b-limpar">Todo o período</button>
+    </div>
     <label for="f-unidade">Unidade
       <select class="dash-select" id="f-unidade" aria-label="Unidade">
         <option value="">Todas as unidades</option>
@@ -207,18 +217,37 @@
 </div>
 
 <script>
-  // Filtros da página: período e unidade (não mudam nenhuma consulta, só os cálculos abaixo).
+  // Filtros da página: período da alteração (de/até) e unidade (não mudam nenhuma consulta, só os cálculos abaixo).
   window.avFiltrar = (rows, p) => rows.filter((r) =>
-    (p.periodo !== 'vigencia' || r.depois_da_vigencia) && (!p.unidade || r.unidade === p.unidade));
+    (!p.de || (r.data && r.data >= p.de)) && (!p.ate || (r.data && r.data <= p.ate)) && (!p.unidade || r.unidade === p.unidade));
 
-  const fp = document.getElementById('f-periodo');
+  // Período da alteração: duas datas (vazias = sem limite). Só aceita data completa e válida.
+  const fde = document.getElementById('f-de');
+  const fate = document.getElementById('f-ate');
+  const bRegra = document.getElementById('b-regra');
+  const bLimpar = document.getElementById('b-limpar');
+  const REGRA = '2026-10-09';
+  const aplicarData = (el, nome) => {
+    if (!el) return;
+    el.addEventListener('change', () => {
+      if (el.value === '') dash.setParams({[nome]: ''});
+      else if (el.validity.valid) dash.setParams({[nome]: el.value});
+    });
+    el.addEventListener('blur', () => { el.value = dash.params()[nome] || ''; });
+  };
+  aplicarData(fde, 'de');
+  aplicarData(fate, 'ate');
+  if (bRegra) bRegra.addEventListener('click', () => dash.setParams({de: REGRA, ate: ''}));
+  if (bLimpar) bLimpar.addEventListener('click', () => dash.setParams({de: '', ate: ''}));
   const fu = document.getElementById('f-unidade');
-  if (fp) fp.addEventListener('change', () => dash.setParams({periodo: fp.value}));
   if (fu) fu.addEventListener('change', () => dash.setParams({unidade: fu.value}));
   dash.onData(() => {
     const p = dash.params();
-    if (fp && document.activeElement !== fp) fp.value = p.periodo || 'todos';
+    if (fde && document.activeElement !== fde) fde.value = p.de || '';
+    if (fate && document.activeElement !== fate) fate.value = p.ate || '';
     if (fu && document.activeElement !== fu) fu.value = p.unidade || '';
+    if (bRegra) bRegra.classList.toggle('av-ativo', p.de === REGRA && !p.ate);
+    if (bLimpar) bLimpar.classList.toggle('av-ativo', !p.de && !p.ate);
   });
   document.querySelectorAll('#f-fora, #f-pendentes').forEach((el) => el.addEventListener('change', () => dash.draw('t-alteracoes')));
 
@@ -236,7 +265,7 @@
     inputs: ['alteracoes'],
     fn: (alteracoes) => {
       const p = dash.params();
-      const rows = alteracoes.filter((r) => (p.periodo !== 'vigencia' || r.depois_da_vigencia) && (!p.unidade || r.unidade === p.unidade));
+      const rows = alteracoes.filter((r) => (!p.de || (r.data && r.data >= p.de)) && (!p.ate || (r.data && r.data <= p.ate)) && (!p.unidade || r.unidade === p.unidade));
       const id = rows.filter((r) => r.situacao === 'Identificado');
       const dias = id.filter((r) => r.depois_do_vencimento).map((r) => r.dias_apos_vencimento).sort((a, b) => a - b);
       const m = Math.floor(dias.length / 2);
@@ -260,7 +289,7 @@
     inputs: ['alteracoes'],
     fn: (alteracoes) => {
       const p = dash.params();
-      const rows = alteracoes.filter((r) => r.situacao === 'Identificado' && (p.periodo !== 'vigencia' || r.depois_da_vigencia) && (!p.unidade || r.unidade === p.unidade));
+      const rows = alteracoes.filter((r) => r.situacao === 'Identificado' && (!p.de || (r.data && r.data >= p.de)) && (!p.ate || (r.data && r.data <= p.ate)) && (!p.unidade || r.unidade === p.unidade));
       const g = new Map();
       for (const r of rows) {
         const x = g.get(r.quem) || {quem: r.quem, funcao: r.funcao, grupo: r.grupo, gerencia: r.gerencia, alteracoes: 0, fora_regra: 0, maior_para: 0, dias: [], ultima: ''};
@@ -284,7 +313,7 @@
     inputs: ['alteracoes'],
     fn: (alteracoes) => {
       const p = dash.params();
-      const rows = alteracoes.filter((r) => r.situacao === 'Identificado' && (p.periodo !== 'vigencia' || r.depois_da_vigencia) && (!p.unidade || r.unidade === p.unidade));
+      const rows = alteracoes.filter((r) => r.situacao === 'Identificado' && (!p.de || (r.data && r.data >= p.de)) && (!p.ate || (r.data && r.data <= p.ate)) && (!p.unidade || r.unidade === p.unidade));
       const g = new Map();
       for (const r of rows) {
         const x = g.get(r.grupo) || {grupo: r.grupo, alteracoes: 0, fora_regra: 0};
@@ -304,7 +333,7 @@
     fn: (alteracoes) => {
       const p = dash.params();
       const ordem = ['Petrópolis', 'Lagoa Nova', 'Capim Macio', 'Norte Shopping'];
-      const rows = alteracoes.filter((r) => (p.periodo !== 'vigencia' || r.depois_da_vigencia) && (!p.unidade || r.unidade === p.unidade));
+      const rows = alteracoes.filter((r) => (!p.de || (r.data && r.data >= p.de)) && (!p.ate || (r.data && r.data <= p.ate)) && (!p.unidade || r.unidade === p.unidade));
       return ordem.filter((u) => !p.unidade || u === p.unidade).map((u) => {
         const ru = rows.filter((r) => r.unidade === u);
         const id = ru.filter((r) => r.situacao === 'Identificado');
@@ -320,7 +349,7 @@
     inputs: ['alteracoes'],
     fn: (alteracoes) => {
       const p = dash.params();
-      const rows = alteracoes.filter((r) => r.situacao === 'Identificado' && r.mes && (p.periodo !== 'vigencia' || r.depois_da_vigencia) && (!p.unidade || r.unidade === p.unidade));
+      const rows = alteracoes.filter((r) => r.situacao === 'Identificado' && r.mes && (!p.de || (r.data && r.data >= p.de)) && (!p.ate || (r.data && r.data <= p.ate)) && (!p.unidade || r.unidade === p.unidade));
       const g = new Map();
       for (const r of rows) {
         const x = g.get(r.mes) || {mes: r.mes, alteracoes: 0, fora_regra: 0};
