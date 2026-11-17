@@ -94,13 +94,31 @@
                           {headers: {authorization: token, 'X-Belle-Pagina': '/venda-planos'}});
     const texto = await r.text();
     if (!r.ok) {
-      const e = new Error(`HTTP ${r.status}: ${texto.slice(0, 160)}`);
+      const limpo = texto.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 120);
+      const e = new Error(`HTTP ${r.status}${limpo ? `: ${limpo}` : ''}`);
       e.status = r.status;
       throw e;
     }
     const j = JSON.parse(texto);
     const regs = Array.isArray(j) ? j : (j.dados || j.data || j.registros || j.result || j.ret || []);
     return {regs: Array.isArray(regs) ? regs : [], estabUsada: estab};
+  };
+
+  // Instabilidade do Belle (erro 5xx ou queda de rede): espera e tenta de novo, até 4 vezes.
+  const espera = (ms) => new Promise((ok) => setTimeout(ok, ms));
+  const consultarComCalma = async (p, f, i, total) => {
+    const pausas = [3000, 8000, 20000, 45000];
+    for (let t = 0; ; t++) {
+      try {
+        return await consultar(p, f);
+      } catch (e) {
+        const instavel = !e.status || e.status >= 500 || e.status === 429;
+        if (!instavel || t >= pausas.length) throw e;
+        msg(`Auditoria de validade: o Belle está instável (${e.message.slice(0, 40)}). ` +
+            `Tentando de novo em ${pausas[t] / 1000} s… (plano ${i + 1} de ${total}, não feche esta aba)`);
+        await espera(pausas[t]);
+      }
+    }
   };
 
   const enviar = async (consultas) => {
@@ -117,6 +135,7 @@
   let consultados = 0;
   let comAlteracao = 0;
   let erros = 0;
+  let seguidos = 0;
   const outraUnidade = {};
   for (let i = 0; i < fila.length; i++) {
     const p = fila[i];
@@ -130,7 +149,7 @@
       for (const f of formas) {
         if (f.estab(p) === '' ) continue;
         try {
-          res = await consultar(p, f);
+          res = await consultarComCalma(p, f, i, fila.length);
           forma = f;
           break;
         } catch (e) {
@@ -145,13 +164,15 @@
       }
     } else {
       try {
-        res = await consultar(p, forma);
+        res = await consultarComCalma(p, forma, i, fila.length);
+        seguidos = 0;
       } catch (e) {
         erros++;
-        if (erros >= 5 && erros > i / 2) {
+        seguidos++;
+        if (seguidos >= 5) {
           if (pendentesEnvio.length) await enviar(pendentesEnvio);
-          msg(`O Belle parou de aceitar as consultas (${e.message}). Confira se está logado e tente de novo. ` +
-              `${consultados} planos já foram enviados.`);
+          msg(`O Belle não está respondendo agora (${e.message}). ${consultados} planos já foram enviados; ` +
+              'os outros continuam na fila. Tente de novo mais tarde (se o erro for 401, faça login de novo).');
           return;
         }
         continue;
