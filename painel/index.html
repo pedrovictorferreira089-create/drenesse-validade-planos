@@ -45,6 +45,8 @@
   .av .dash-select { background-color: var(--dr-branco); color: var(--dr-grafite); border-color: var(--dr-linha); }
   .av-botao.av-ativo { background-color: var(--dr-carmim); color: var(--dr-branco); border-color: var(--dr-carmim); }
   .av-check { display: flex !important; align-items: center; gap: var(--cds-gap-xs); grid-auto-flow: column; color: var(--color-fg) !important; font-size: var(--cds-font-size-body) !important; }
+  .av-resumo-filtro { margin: calc(-1 * var(--cds-gap-md)) 0 0; font-size: var(--cds-font-size-body); color: var(--dr-grafite); }
+  .av-resumo-filtro b { color: var(--dr-carmim); font-variant-numeric: tabular-nums; }
   .av-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--cds-gap-md); }
   .av-kpi { background: var(--dr-branco); border: 1px solid var(--dr-linha); border-radius: 14px 14px 14px 4px; padding: var(--cds-pad-lg); display: grid; gap: var(--cds-gap-xs); align-content: start; }
   .av-kpi-n { font-family: var(--dr-titulo); color: var(--dr-grafite); font-weight: 400; font-size: 2.1rem; line-height: 1; font-variant-numeric: tabular-nums; }
@@ -136,6 +138,8 @@
       </select>
     </label>
   </div>
+
+  <p class="av-resumo-filtro" id="resumo-filtro" aria-live="polite" data-draw="filtro-resumo" data-source="kpis" data-field="identificadas">—</p>
 
   <section class="av-kpis" id="indicadores" aria-label="Indicadores">
     <div class="av-kpi" id="k-ident">
@@ -423,6 +427,18 @@
   dash.draw('st-consulta', texto('monitor', 'ultima_consulta_auditoria', (v) => dataBR(v) || 'ainda não houve'));
   dash.draw('st-fila', texto('monitor', 'na_fila'));
   dash.draw('k-ident', texto('kpis', 'identificadas'));
+  // Frase que mostra o filtro em uso e o intervalo de datas que existe nos dados.
+  dash.draw('filtro-resumo', (el) => {
+    const k = dash.data('kpis'), a = dash.data('alteracoes');
+    if (k.status !== 'ok' || !k.data || !k.data.length || a.status !== 'ok') { el.textContent = '—'; return; }
+    const p = dash.params();
+    const datas = a.data.map((r) => r.data).filter(Boolean).sort();
+    const b = (t) => { const x = document.createElement('b'); x.textContent = t; return x; };
+    const periodo = p.de && p.ate ? `feitas de ${dataBR(p.de)} até ${dataBR(p.ate)}` : p.de ? `feitas a partir de ${dataBR(p.de)}`
+      : p.ate ? `feitas até ${dataBR(p.ate)}` : 'de todo o período';
+    el.replaceChildren('Mostrando ', b(nf(k.data[0].identificadas)), ` alterações ${periodo}${p.unidade ? ` em ${p.unidade}` : ''}.`,
+      datas.length ? ` As alterações registradas vão de ${dataBR(datas[0])} a ${dataBR(datas[datas.length - 1])}.` : '');
+  });
   dash.draw('k-fora', texto('kpis', 'fora_regra'));
   dash.draw('k-acima', texto('kpis', 'acima_12'));
   dash.draw('k-maior', texto('kpis', 'maior_para'));
