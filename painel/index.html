@@ -211,11 +211,28 @@
 
   <section class="av-sec" id="lista">
     <h2>Alterações de validade, uma por linha</h2>
-    <p>As mais recentes primeiro. A faixa vermelha marca as que estão fora da regra. "Aguardando consulta" ainda não tem autoria: o botão da gerência busca na Auditoria do Belle.</p>
+    <p>Escolha a regra para ver só os planos daquele tipo. A faixa vermelha marca as alterações fora da regra.</p>
     <div class="av-filtros">
-      <label class="av-check" for="f-fora"><input type="checkbox" id="f-fora"> Só fora da regra</label>
-      <label class="av-check" for="f-pendentes"><input type="checkbox" id="f-pendentes" checked> Mostrar as que aguardam consulta</label>
+      <label for="f-regra">Regra
+        <select class="dash-select" id="f-regra" aria-label="Regra">
+          <option value="acima12">Validade acima de 12 meses da venda</option>
+          <option value="repetida">2ª alteração ou mais no mesmo plano</option>
+          <option value="fora">Qualquer fora da regra</option>
+          <option value="vencido">Alterada com o plano já vencido</option>
+          <option value="dentro">Dentro da regra</option>
+          <option value="todas">Todas as alterações</option>
+        </select>
+      </label>
+      <label for="f-ordem">Ordenar por
+        <select class="dash-select" id="f-ordem" aria-label="Ordenar por">
+          <option value="para">Maior validade nova primeiro</option>
+          <option value="data">Mais recentes primeiro</option>
+          <option value="quem">Quem alterou (A a Z)</option>
+        </select>
+      </label>
+      <label class="av-check" for="f-pendentes"><input type="checkbox" id="f-pendentes"> Incluir as que aguardam consulta</label>
     </div>
+    <p class="av-resumo-filtro" id="contagem-lista" data-draw="t-contagem" data-source="alteracoes">—</p>
     <div class="av-tab-wrap" id="tabela-alteracoes">
       <table class="av-tab" data-source="alteracoes" data-row-key="plano,alteracao_no_plano">
         <thead><tr>
@@ -288,7 +305,27 @@
     if (fu && document.activeElement !== fu) fu.value = p.unidade || '';
     if (bLimpar) bLimpar.classList.toggle('av-ativo', !p.de && !p.ate);
   });
-  document.querySelectorAll('#f-fora, #f-pendentes').forEach((el) => el.addEventListener('change', () => dash.draw('t-alteracoes')));
+  document.querySelectorAll('#f-regra, #f-ordem, #f-pendentes').forEach((el) => el.addEventListener('change', () => { dash.draw('t-alteracoes'); dash.draw('t-contagem'); }));
+  // Linhas da lista conforme período, unidade, regra e ordem escolhidos.
+  window.avLinhas = (dados) => {
+    const p = dash.params();
+    const regra = document.getElementById('f-regra')?.value || 'acima12';
+    const ordem = document.getElementById('f-ordem')?.value || 'para';
+    const pend = document.getElementById('f-pendentes')?.checked ?? false;
+    const teste = {
+      acima12: (r) => r.acima_12_meses, repetida: (r) => r.alteracao_repetida || r.alteracao_no_plano > 1,
+      fora: (r) => r.fora_da_regra, vencido: (r) => r.depois_do_vencimento,
+      dentro: (r) => r.situacao === 'Identificado' && !r.fora_da_regra, todas: () => true,
+    }[regra];
+    const rows = window.avFiltrar(dados, p).filter((r) => teste(r) && (pend || r.situacao === 'Identificado'));
+    const cmp = {
+      para: (a, b) => (b.para_meses || 0) - (a.para_meses || 0) || (b.data || '').localeCompare(a.data || ''),
+      data: (a, b) => (b.data || '').localeCompare(a.data || ''),
+      quem: (a, b) => a.quem.localeCompare(b.quem) || (b.para_meses || 0) - (a.para_meses || 0),
+    }[ordem];
+    return rows.slice().sort(cmp);
+  };
+  window.avRegraNome = () => document.getElementById('f-regra')?.selectedOptions[0]?.textContent.toLowerCase() || '';
 
   const mediana = (xs) => {
     const v = xs.filter((x) => x != null).sort((a, b) => a - b);
@@ -542,14 +579,21 @@
     }
   });
 
+  dash.draw('t-contagem', (el) => {
+    const d = dash.data('alteracoes');
+    if (d.status !== 'ok') { el.textContent = '—'; return; }
+    const rows = window.avLinhas(d.data);
+    const planos = new Set(rows.map((r) => r.plano)).size;
+    const pessoas = new Set(rows.filter((r) => r.situacao === 'Identificado').map((r) => r.quem)).size;
+    const b = (t) => { const x = document.createElement('b'); x.textContent = t; return x; };
+    el.replaceChildren(b(nf(rows.length)), ` alterações (${nf(planos)} planos, feitas por `, b(nf(pessoas)), ` pessoas) em "${window.avRegraNome()}".`);
+  });
+
   dash.draw('t-alteracoes', (tb) => {
     const d = dash.data('alteracoes');
     tb.replaceChildren();
     if (d.status !== 'ok') return;
-    const p = dash.params();
-    const soFora = document.getElementById('f-fora')?.checked;
-    const pend = document.getElementById('f-pendentes')?.checked ?? true;
-    const rows = window.avFiltrar(d.data, p).filter((r) => (!soFora || r.fora_da_regra) && (pend || r.situacao === 'Identificado'));
+    const rows = window.avLinhas(d.data);
     if (!rows.length) {
       const td = tb.insertRow().insertCell(); td.colSpan = 13; td.className = 'av-muted'; td.textContent = 'Nenhuma alteração no filtro escolhido.';
       return;
