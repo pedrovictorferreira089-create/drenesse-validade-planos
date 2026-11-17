@@ -1,0 +1,498 @@
+<meta name="dash-one-writer">
+<style>
+  .av { display: grid; gap: var(--cds-gap-xl); font-family: var(--font-anthropic-sans); color: var(--color-fg); }
+  .av-head { display: grid; gap: var(--cds-gap-sm); }
+  .av-eyebrow { font-size: var(--cds-font-size-caption); letter-spacing: .06em; text-transform: uppercase; color: var(--color-fg-muted); }
+  .av-title { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0; text-wrap: balance; }
+  .av-lead { font-size: var(--cds-font-size-heading); margin: 0; max-width: 62ch; line-height: 1.45; }
+  .av-status { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin: 0; }
+  .av-status b, .av-lead b { font-weight: var(--cds-font-weight-medium); font-variant-numeric: tabular-nums; }
+  .av-filtros { display: flex; flex-wrap: wrap; gap: var(--cds-gap-md); align-items: end; }
+  .av-filtros label { display: grid; gap: var(--cds-gap-xs); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .av-check { display: flex !important; align-items: center; gap: var(--cds-gap-xs); grid-auto-flow: column; color: var(--color-fg) !important; font-size: var(--cds-font-size-body) !important; }
+  .av-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--cds-gap-md); }
+  .av-kpi { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: grid; gap: var(--cds-gap-xs); align-content: start; }
+  .av-kpi-n { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: 2.1rem; line-height: 1; font-variant-numeric: tabular-nums; }
+  .av-kpi-l { font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); }
+  .av-kpi-d { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .av-kpi.av-ruim .av-kpi-n { color: var(--color-bad); }
+  .av-kpi.av-alerta .av-kpi-n { color: var(--color-warn); }
+  .av-sec { display: grid; gap: var(--cds-gap-md); min-width: 0; }
+  .av-sec h2 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0; }
+  .av-sec > p { margin: 0; color: var(--color-fg-muted); max-width: 70ch; }
+  .av-grade { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--cds-gap-xl); }
+  .av-grafico { position: relative; min-height: 120px; min-width: 0; }
+  .av-grafico svg { display: block; width: 100%; overflow: visible; }
+  .av-grafico text { fill: var(--cds-text-secondary); font-size: var(--cds-font-size-caption); font-family: var(--font-anthropic-sans); }
+  .av-grafico .av-rot { fill: var(--color-fg); }
+  .av-grafico .av-num { fill: var(--color-fg); font-variant-numeric: tabular-nums; }
+  .av-dica { position: absolute; pointer-events: none; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); box-shadow: var(--cds-shadow-popover); border-radius: var(--cds-radius); padding: var(--cds-pad-sm) var(--cds-pad-md); font-size: var(--cds-font-size-caption); color: var(--color-fg); white-space: nowrap; z-index: 2; }
+  .av-legenda { display: flex; flex-wrap: wrap; gap: var(--cds-gap-md); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .av-legenda span { display: inline-flex; align-items: center; gap: 6px; }
+  .av-legenda i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+  .av-tab-wrap { overflow: auto; max-height: 640px; border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); }
+  .av-tab { border-collapse: collapse; width: 100%; font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
+  .av-tab th { position: sticky; top: 0; background: var(--color-panel); text-align: left; font-weight: var(--cds-font-weight-medium); padding: var(--cds-pad-sm) var(--cds-pad-md); border-bottom: 1px solid var(--color-border-line); white-space: nowrap; z-index: 1; }
+  .av-tab td { padding: var(--cds-pad-sm) var(--cds-pad-md); border-bottom: 1px solid var(--color-border-line); vertical-align: top; }
+  .av-tab td.av-n, .av-tab th.av-n { text-align: right; }
+  .av-tab tr.av-fora td:first-child { box-shadow: inset 3px 0 0 var(--color-bad); }
+  .av-chip { display: inline-block; border-radius: 999px; padding: 1px 8px; margin: 1px 4px 1px 0; font-size: 11px; white-space: nowrap; border: 1px solid var(--color-border-line); }
+  .av-chip.av-c-ruim { color: var(--color-bad); border-color: var(--color-bad); }
+  .av-chip.av-c-alerta { color: var(--color-warn); border-color: var(--color-warn); }
+  .av-chip.av-c-ok { color: var(--color-ok); border-color: var(--color-ok); }
+  .av-muted { color: var(--color-fg-muted); }
+  .av-regra { margin: 0; padding-left: 1.2em; display: grid; gap: var(--cds-gap-xs); max-width: 70ch; }
+  details.av-notas { border-top: 1px solid var(--color-border-line); padding-top: var(--cds-pad-md); }
+  details.av-notas summary { cursor: pointer; font-weight: var(--cds-font-weight-medium); }
+  details.av-notas div { display: grid; gap: var(--cds-gap-sm); margin-top: var(--cds-gap-md); max-width: 72ch; color: var(--color-fg-muted); }
+  details.av-notas p { margin: 0; }
+</style>
+
+<div class="av">
+  <header class="av-head" id="topo">
+    <div class="av-eyebrow">Drenesse · Petrópolis, Lagoa Nova, Capim Macio e Norte Shopping</div>
+    <h1 class="av-title">Auditoria de validade dos planos</h1>
+    <p class="av-lead">
+      <b data-draw="lead-ident" data-source="kpis" data-field="identificadas">—</b> alterações de validade com autoria identificada,
+      <b data-draw="lead-fora" data-source="kpis" data-field="fora_regra">—</b> delas fora da regra.
+      Quem mais alterou: <b data-draw="lead-lider" data-source="por_pessoa" data-field="quem" data-row="0">—</b>
+      (<b data-draw="lead-lider-n" data-source="por_pessoa" data-field="alteracoes" data-row="0">—</b> planos).
+    </p>
+    <p class="av-status" id="status">
+      Foto do Belle de <b data-draw="st-foto" data-source="monitor" data-field="ultima_foto" data-row="0">—</b>
+      (<b data-draw="st-planos" data-source="monitor" data-field="planos_na_foto" data-row="0">—</b> planos com sessões a fazer).
+      Última consulta à Auditoria do Belle: <b data-draw="st-consulta" data-source="monitor" data-field="ultima_consulta_auditoria" data-row="0">—</b>.
+      Na fila para descobrir quem alterou: <b data-draw="st-fila" data-source="monitor" data-field="na_fila" data-row="0">—</b> planos.
+    </p>
+  </header>
+
+  <div class="av-filtros" id="filtros">
+    <label for="f-periodo">Período
+      <select class="dash-select" id="f-periodo" aria-label="Período">
+        <option value="todos">Todas as alterações</option>
+        <option value="vigencia">Só depois da regra (desde 09/10/2026)</option>
+      </select>
+    </label>
+    <label for="f-unidade">Unidade
+      <select class="dash-select" id="f-unidade" aria-label="Unidade">
+        <option value="">Todas as unidades</option>
+        <option value="Petrópolis">Petrópolis</option>
+        <option value="Lagoa Nova">Lagoa Nova</option>
+        <option value="Capim Macio">Capim Macio</option>
+        <option value="Norte Shopping">Norte Shopping</option>
+      </select>
+    </label>
+  </div>
+
+  <section class="av-kpis" id="indicadores" aria-label="Indicadores">
+    <div class="av-kpi" id="k-ident">
+      <div class="av-kpi-n" data-draw="k-ident" data-source="kpis" data-field="identificadas">—</div>
+      <div class="av-kpi-l">Alterações identificadas</div>
+      <div class="av-kpi-d">com quem alterou, pela Auditoria do Belle</div>
+    </div>
+    <div class="av-kpi av-ruim" id="k-fora">
+      <div class="av-kpi-n" data-draw="k-fora" data-source="kpis" data-field="fora_regra">—</div>
+      <div class="av-kpi-l">Fora da regra</div>
+      <div class="av-kpi-d">passou de 12 meses, foi feita fora da gerência ou repetiu no plano</div>
+    </div>
+    <div class="av-kpi av-ruim" id="k-acima">
+      <div class="av-kpi-n" data-draw="k-acima" data-source="kpis" data-field="acima_12">—</div>
+      <div class="av-kpi-l">Acima de 12 meses da venda</div>
+      <div class="av-kpi-d">maior: <span data-draw="k-maior" data-source="kpis" data-field="maior_para">—</span> meses</div>
+    </div>
+    <div class="av-kpi av-ruim" id="k-gerencia">
+      <div class="av-kpi-n" data-draw="k-gerencia" data-source="kpis" data-field="fora_gerencia">—</div>
+      <div class="av-kpi-l">Feitas fora da gerência</div>
+      <div class="av-kpi-d">só supervisoras sênior e comercial e a direção podem alterar</div>
+    </div>
+    <div class="av-kpi av-alerta" id="k-vencido">
+      <div class="av-kpi-n" data-draw="k-vencido" data-source="kpis" data-field="depois_vencido">—</div>
+      <div class="av-kpi-l">Com o plano já vencido</div>
+      <div class="av-kpi-d">mediana de <span data-draw="k-mediana" data-source="kpis" data-field="mediana_dias">—</span> dias depois do vencimento</div>
+    </div>
+    <div class="av-kpi" id="k-aguardando">
+      <div class="av-kpi-n" data-draw="k-aguardando" data-source="kpis" data-field="aguardando">—</div>
+      <div class="av-kpi-l">Sem autoria ainda</div>
+      <div class="av-kpi-d">validade acima de 12 meses ou mudada na foto diária, aguardando a consulta</div>
+    </div>
+  </section>
+
+  <section class="av-sec" id="quem">
+    <h2>Quem alterou a validade</h2>
+    <p>Nome de quem fez a operação "Alterou Validade" no Belle, não de quem vendeu o plano.</p>
+    <div class="av-legenda" aria-hidden="true">
+      <span><i style="background: var(--cds-chart-status-critical)"></i>Fora da regra</span>
+      <span><i style="background: var(--cds-chart-muted)"></i>Dentro da regra</span>
+    </div>
+    <div class="av-grafico" data-draw="g-pessoas" data-source="por_pessoa" id="grafico-pessoas"></div>
+    <div class="av-tab-wrap" id="tabela-pessoas">
+      <table class="av-tab" data-source="por_pessoa" data-row-key="quem">
+        <thead><tr>
+          <th data-field="quem">Quem alterou</th>
+          <th data-field="funcao">Função</th>
+          <th data-field="alteracoes" class="av-n">Planos alterados</th>
+          <th data-field="fora_regra" class="av-n">Fora da regra</th>
+          <th data-field="maior_para" class="av-n">Maior validade (meses)</th>
+          <th data-field="mediana_dias" class="av-n">Mediana de dias após o vencimento</th>
+          <th data-field="ultima">Última alteração</th>
+        </tr></thead>
+        <tbody data-draw="t-pessoas"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="av-grade">
+    <section class="av-sec" id="funcao">
+      <h2>Por função</h2>
+      <div class="av-grafico" data-draw="g-grupo" data-source="por_grupo" id="grafico-funcao"></div>
+    </section>
+    <section class="av-sec" id="unidade">
+      <h2>Por unidade</h2>
+      <div class="av-grafico" data-draw="g-unidade" data-source="por_unidade" id="grafico-unidade"></div>
+    </section>
+  </div>
+
+  <section class="av-sec" id="mes">
+    <h2>Por mês da alteração</h2>
+    <div class="av-grafico" data-draw="g-mes" data-source="por_mes" id="grafico-mes"></div>
+  </section>
+
+  <section class="av-sec" id="lista">
+    <h2>Alterações de validade, uma por linha</h2>
+    <p>As mais recentes primeiro. A faixa vermelha marca as que estão fora da regra. "Aguardando consulta" ainda não tem autoria: o botão da gerência busca na Auditoria do Belle.</p>
+    <div class="av-filtros">
+      <label class="av-check" for="f-fora"><input type="checkbox" id="f-fora"> Só fora da regra</label>
+      <label class="av-check" for="f-pendentes"><input type="checkbox" id="f-pendentes" checked> Mostrar as que aguardam consulta</label>
+    </div>
+    <div class="av-tab-wrap" id="tabela-alteracoes">
+      <table class="av-tab" data-source="alteracoes" data-row-key="plano,alteracao_no_plano">
+        <thead><tr>
+          <th data-field="plano">Plano</th>
+          <th data-field="unidade">Unidade</th>
+          <th data-field="data">Data</th>
+          <th data-field="quem">Quem alterou</th>
+          <th data-field="funcao">Função</th>
+          <th data-field="de_meses" class="av-n">De (meses)</th>
+          <th data-field="para_meses" class="av-n">Para (meses)</th>
+          <th data-field="nova_validade">Nova validade</th>
+          <th data-field="dias_apos_vencimento" class="av-n">Dias após o vencimento</th>
+          <th data-field="vendedora">Vendedora</th>
+          <th data-field="sessoes_restantes" class="av-n">Sessões a fazer</th>
+          <th>Regra</th>
+        </tr></thead>
+        <tbody data-draw="t-alteracoes"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="av-sec" id="regra">
+    <h2>A regra vigente</h2>
+    <ol class="av-regra">
+      <li>Na venda, a validade segue o pacote: até 24 sessões, 6 meses; 25 sessões ou mais, 12 meses.</li>
+      <li>Só a gerência altera a data no Belle (supervisoras sênior e comercial e a direção), uma única vez, com o motivo registrado e no máximo até 12 meses da venda.</li>
+      <li>Venceu com sessões em aberto: para renovar, reavaliação e multa de 30% sobre o valor das sessões restantes.</li>
+      <li>Auditoria recorrente: data alterada fora da regra é passível de advertência.</li>
+    </ol>
+  </section>
+
+  <details class="av-notas" id="notas">
+    <summary>Como os dados chegam aqui</summary>
+    <div>
+      <p>Todo dia uma rotina lê no Belle a validade de todos os planos com sessões a fazer e compara com o dia anterior. Cada data que mudou entra nesta página no dia seguinte.</p>
+      <p>Quem alterou só aparece na Auditoria do Belle (Venda de Planos, plano, Auditoria), que o Belle libera apenas para quem está logado. Por isso a gerência usa um botão de favoritos no Belle: ele consulta a Auditoria dos planos da fila e manda o resultado para cá.</p>
+      <p>"Fora da regra" quer dizer que a nova validade passou de 12 meses da venda, que a alteração foi feita por alguém fora da gerência ou que o plano já tinha sido alterado antes. O motivo registrado e a multa de 30% não aparecem no Belle de forma que dê para conferir aqui.</p>
+      <p>As 91 alterações conferidas à mão em 09/10/2026 entram como "Auditoria manual". As funções vêm das planilhas do RH. Nomes de clientes não aparecem nesta página.</p>
+    </div>
+  </details>
+</div>
+
+<script>
+  // Filtros da página: período e unidade (não mudam nenhuma consulta, só os cálculos abaixo).
+  window.avFiltrar = (rows, p) => rows.filter((r) =>
+    (p.periodo !== 'vigencia' || r.depois_da_vigencia) && (!p.unidade || r.unidade === p.unidade));
+
+  const fp = document.getElementById('f-periodo');
+  const fu = document.getElementById('f-unidade');
+  if (fp) fp.addEventListener('change', () => dash.setParams({periodo: fp.value}));
+  if (fu) fu.addEventListener('change', () => dash.setParams({unidade: fu.value}));
+  dash.onData(() => {
+    const p = dash.params();
+    if (fp && document.activeElement !== fp) fp.value = p.periodo || 'todos';
+    if (fu && document.activeElement !== fu) fu.value = p.unidade || '';
+  });
+  document.querySelectorAll('#f-fora, #f-pendentes').forEach((el) => el.addEventListener('change', () => dash.draw('t-alteracoes')));
+
+  const mediana = (xs) => {
+    const v = xs.filter((x) => x != null).sort((a, b) => a - b);
+    if (!v.length) return null;
+    const m = Math.floor(v.length / 2);
+    return v.length % 2 ? v[m] : Math.round((v[m - 1] + v[m]) / 2);
+  };
+  window.avMediana = mediana;
+
+  dash.calc('kpis', {
+    title: 'Indicadores',
+    description: 'Contagens das alterações identificadas no período e unidade escolhidos.',
+    inputs: ['alteracoes'],
+    fn: (alteracoes) => {
+      const p = dash.params();
+      const rows = alteracoes.filter((r) => (p.periodo !== 'vigencia' || r.depois_da_vigencia) && (!p.unidade || r.unidade === p.unidade));
+      const id = rows.filter((r) => r.situacao === 'Identificado');
+      const dias = id.filter((r) => r.depois_do_vencimento).map((r) => r.dias_apos_vencimento).sort((a, b) => a - b);
+      const m = Math.floor(dias.length / 2);
+      return [{
+        identificadas: id.length,
+        fora_regra: id.filter((r) => r.fora_da_regra).length,
+        acima_12: id.filter((r) => r.acima_12_meses).length,
+        maior_para: id.length ? Math.max(...id.map((r) => r.para_meses || 0)) : 0,
+        fora_gerencia: id.filter((r) => r.fora_da_gerencia).length,
+        repetidas: id.filter((r) => r.alteracao_repetida).length,
+        depois_vencido: dias.length,
+        mediana_dias: dias.length ? (dias.length % 2 ? dias[m] : Math.round((dias[m - 1] + dias[m]) / 2)) : 0,
+        aguardando: alteracoes.filter((r) => r.situacao !== 'Identificado' && (!p.unidade || r.unidade === p.unidade)).length,
+      }];
+    },
+  });
+
+  dash.calc('por_pessoa', {
+    title: 'Alterações por pessoa',
+    description: 'Alterações identificadas agrupadas por quem alterou, da que mais alterou para a que menos.',
+    inputs: ['alteracoes'],
+    fn: (alteracoes) => {
+      const p = dash.params();
+      const rows = alteracoes.filter((r) => r.situacao === 'Identificado' && (p.periodo !== 'vigencia' || r.depois_da_vigencia) && (!p.unidade || r.unidade === p.unidade));
+      const g = new Map();
+      for (const r of rows) {
+        const x = g.get(r.quem) || {quem: r.quem, funcao: r.funcao, grupo: r.grupo, gerencia: r.gerencia, alteracoes: 0, fora_regra: 0, maior_para: 0, dias: [], ultima: ''};
+        x.alteracoes += 1;
+        x.fora_regra += r.fora_da_regra ? 1 : 0;
+        x.maior_para = Math.max(x.maior_para, r.para_meses || 0);
+        if (r.depois_do_vencimento) x.dias.push(r.dias_apos_vencimento);
+        if (r.data > x.ultima) x.ultima = r.data;
+        g.set(r.quem, x);
+      }
+      return [...g.values()].map(({dias, ...x}) => {
+        const v = dias.sort((a, b) => a - b), m = Math.floor(v.length / 2);
+        return {...x, mediana_dias: v.length ? (v.length % 2 ? v[m] : Math.round((v[m - 1] + v[m]) / 2)) : null};
+      }).sort((a, b) => b.alteracoes - a.alteracoes || b.fora_regra - a.fora_regra || a.quem.localeCompare(b.quem));
+    },
+  });
+
+  dash.calc('por_grupo', {
+    title: 'Alterações por função',
+    description: 'Alterações identificadas por grupo de função (gerência, coordenação, recepção, central, esteticista).',
+    inputs: ['alteracoes'],
+    fn: (alteracoes) => {
+      const p = dash.params();
+      const rows = alteracoes.filter((r) => r.situacao === 'Identificado' && (p.periodo !== 'vigencia' || r.depois_da_vigencia) && (!p.unidade || r.unidade === p.unidade));
+      const g = new Map();
+      for (const r of rows) {
+        const x = g.get(r.grupo) || {grupo: r.grupo, alteracoes: 0, fora_regra: 0};
+        x.alteracoes += 1;
+        x.fora_regra += r.fora_da_regra ? 1 : 0;
+        g.set(r.grupo, x);
+      }
+      return [...g.values()].map((x) => ({...x, percentual: rows.length ? x.alteracoes / rows.length : 0}))
+        .sort((a, b) => b.alteracoes - a.alteracoes);
+    },
+  });
+
+  dash.calc('por_unidade', {
+    title: 'Alterações por unidade',
+    description: 'Alterações identificadas e as que ainda aguardam consulta, por unidade.',
+    inputs: ['alteracoes'],
+    fn: (alteracoes) => {
+      const p = dash.params();
+      const ordem = ['Petrópolis', 'Lagoa Nova', 'Capim Macio', 'Norte Shopping'];
+      const rows = alteracoes.filter((r) => (p.periodo !== 'vigencia' || r.depois_da_vigencia) && (!p.unidade || r.unidade === p.unidade));
+      return ordem.filter((u) => !p.unidade || u === p.unidade).map((u) => {
+        const ru = rows.filter((r) => r.unidade === u);
+        const id = ru.filter((r) => r.situacao === 'Identificado');
+        return {unidade: u, alteracoes: id.length, fora_regra: id.filter((r) => r.fora_da_regra).length,
+                aguardando: ru.length - id.length};
+      });
+    },
+  });
+
+  dash.calc('por_mes', {
+    title: 'Alterações por mês',
+    description: 'Alterações identificadas pelo mês em que a validade foi alterada.',
+    inputs: ['alteracoes'],
+    fn: (alteracoes) => {
+      const p = dash.params();
+      const rows = alteracoes.filter((r) => r.situacao === 'Identificado' && r.mes && (p.periodo !== 'vigencia' || r.depois_da_vigencia) && (!p.unidade || r.unidade === p.unidade));
+      const g = new Map();
+      for (const r of rows) {
+        const x = g.get(r.mes) || {mes: r.mes, alteracoes: 0, fora_regra: 0};
+        x.alteracoes += 1;
+        x.fora_regra += r.fora_da_regra ? 1 : 0;
+        g.set(r.mes, x);
+      }
+      return [...g.values()].sort((a, b) => a.mes.localeCompare(b.mes));
+    },
+  });
+</script>
+
+<script>
+  const fmtN = d3.format(',d');
+  const nf = (v) => (v == null || v === '' ? '—' : fmtN(v).replace(/,/g, '.'));
+  const dataBR = (s) => (s ? `${s.slice(8, 10)}/${s.slice(5, 7)}/${s.slice(0, 4)}` : '');
+  const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+  const mesBR = (s) => `${MESES[Number(s.slice(5, 7)) - 1]}/${s.slice(2, 4)}`;
+
+  const texto = (fonte, campo, fmt = nf) => (el) => {
+    const d = dash.data(fonte);
+    if (d.status !== 'ok' || !d.data || !d.data.length) { el.textContent = '—'; return; }
+    const v = d.data[0][campo];
+    el.textContent = fmt(v);
+  };
+  dash.draw('lead-ident', texto('kpis', 'identificadas'));
+  dash.draw('lead-fora', texto('kpis', 'fora_regra'));
+  dash.draw('lead-lider', texto('por_pessoa', 'quem', (v) => v || '—'));
+  dash.draw('lead-lider-n', texto('por_pessoa', 'alteracoes'));
+  dash.draw('st-foto', texto('monitor', 'ultima_foto', dataBR));
+  dash.draw('st-planos', texto('monitor', 'planos_na_foto'));
+  dash.draw('st-consulta', texto('monitor', 'ultima_consulta_auditoria', (v) => dataBR(v) || 'ainda não houve'));
+  dash.draw('st-fila', texto('monitor', 'na_fila'));
+  dash.draw('k-ident', texto('kpis', 'identificadas'));
+  dash.draw('k-fora', texto('kpis', 'fora_regra'));
+  dash.draw('k-acima', texto('kpis', 'acima_12'));
+  dash.draw('k-maior', texto('kpis', 'maior_para'));
+  dash.draw('k-gerencia', texto('kpis', 'fora_gerencia'));
+  dash.draw('k-vencido', texto('kpis', 'depois_vencido'));
+  dash.draw('k-mediana', texto('kpis', 'mediana_dias'));
+  dash.draw('k-aguardando', texto('kpis', 'aguardando'));
+
+  // Barras horizontais empilhadas (fora da regra + dentro da regra), com rótulo e dica.
+  const barras = (fonte, chave, rotulo, limite) => ({
+    mount: (el) => el.replaceChildren(),
+    update: (el) => {
+      const d = dash.data(fonte);
+      el.replaceChildren();
+      if (d.status === 'error') { el.textContent = 'Não carregou.'; return; }
+      if (d.status !== 'ok') { el.textContent = '—'; return; }
+      const rows = (d.data || []).slice(0, limite);
+      if (!rows.length) { el.textContent = 'Nenhuma alteração no filtro escolhido.'; return; }
+      const w = Math.max(el.clientWidth, 280), linha = 26;
+      const svg = d3.select(el).append('svg').attr('role', 'img')
+        .attr('aria-label', `Alterações de validade por ${rotulo}`)
+        .attr('viewBox', `0 0 ${w} ${rows.length * linha + 4}`).attr('height', rows.length * linha + 4);
+      const medir = svg.append('g');
+      const larguraRot = Math.min(w * 0.45, d3.max(rows, (r) => {
+        const t = medir.append('text').text(r[chave]); const n = t.node().getComputedTextLength(); t.remove(); return n;
+      }) + 10);
+      medir.remove();
+      const x = d3.scaleLinear().domain([0, d3.max(rows, (r) => r.alteracoes) || 1]).range([0, w - larguraRot - 40]);
+      const dica = d3.select(el).append('div').attr('class', 'av-dica').attr('hidden', true);
+      const g = svg.selectAll('g.l').data(rows).join('g').attr('class', 'l').attr('transform', (r, i) => `translate(0,${i * linha})`);
+      g.append('text').attr('class', 'av-rot').attr('x', larguraRot - 8).attr('y', linha / 2).attr('dy', '0.35em')
+        .attr('text-anchor', 'end').text((r) => r[chave]);
+      g.append('rect').attr('x', larguraRot).attr('y', 5).attr('height', linha - 10).attr('width', (r) => x(r.fora_regra))
+        .style('fill', 'var(--cds-chart-status-critical)');
+      g.append('rect').attr('x', (r) => larguraRot + x(r.fora_regra)).attr('y', 5).attr('height', linha - 10)
+        .attr('width', (r) => x(r.alteracoes - r.fora_regra)).style('fill', 'var(--cds-chart-muted)');
+      g.append('text').attr('class', 'av-num').attr('x', (r) => larguraRot + x(r.alteracoes) + 6).attr('y', linha / 2)
+        .attr('dy', '0.35em').text((r) => nf(r.alteracoes));
+      g.append('rect').attr('x', 0).attr('y', 0).attr('width', w).attr('height', linha).style('fill', 'transparent')
+        .on('pointermove', (ev, r) => {
+          const [mx, my] = d3.pointer(ev, el);
+          dica.attr('hidden', null).text(`${r[chave]}: ${nf(r.alteracoes)} alterações, ${nf(r.fora_regra)} fora da regra`)
+            .style('left', `${Math.min(mx + 12, w - 220)}px`).style('top', `${my + 12}px`);
+        })
+        .on('pointerleave', () => dica.attr('hidden', true));
+    },
+  });
+  dash.draw('g-pessoas', barras('por_pessoa', 'quem', 'pessoa', 15));
+  dash.draw('g-grupo', barras('por_grupo', 'grupo', 'função', 10));
+  dash.draw('g-unidade', barras('por_unidade', 'unidade', 'unidade', 4));
+
+  dash.draw('g-mes', {
+    mount: (el) => el.replaceChildren(),
+    update: (el) => {
+      const d = dash.data('por_mes');
+      el.replaceChildren();
+      if (d.status === 'error') { el.textContent = 'Não carregou.'; return; }
+      if (d.status !== 'ok') { el.textContent = '—'; return; }
+      const rows = d.data || [];
+      if (!rows.length) { el.textContent = 'Nenhuma alteração no filtro escolhido.'; return; }
+      const w = Math.max(el.clientWidth, 280), h = 200, m = {t: 18, r: 8, b: 24, l: 8};
+      const svg = d3.select(el).append('svg').attr('role', 'img').attr('aria-label', 'Alterações de validade por mês')
+        .attr('viewBox', `0 0 ${w} ${h}`).attr('height', h);
+      const x = d3.scaleBand().domain(rows.map((r) => r.mes)).range([m.l, w - m.r]).padding(0.25);
+      const y = d3.scaleLinear().domain([0, d3.max(rows, (r) => r.alteracoes) || 1]).nice().range([h - m.b, m.t]);
+      svg.append('line').attr('x1', m.l).attr('x2', w - m.r).attr('y1', y(0)).attr('y2', y(0)).style('stroke', 'var(--cds-chart-axis)');
+      const dica = d3.select(el).append('div').attr('class', 'av-dica').attr('hidden', true);
+      const g = svg.selectAll('g.b').data(rows).join('g').attr('class', 'b');
+      g.append('rect').attr('x', (r) => x(r.mes)).attr('width', x.bandwidth()).attr('y', (r) => y(r.fora_regra))
+        .attr('height', (r) => y(0) - y(r.fora_regra)).style('fill', 'var(--cds-chart-status-critical)');
+      g.append('rect').attr('x', (r) => x(r.mes)).attr('width', x.bandwidth()).attr('y', (r) => y(r.alteracoes))
+        .attr('height', (r) => y(r.fora_regra) - y(r.alteracoes)).style('fill', 'var(--cds-chart-muted)');
+      g.append('text').attr('class', 'av-num').attr('x', (r) => x(r.mes) + x.bandwidth() / 2).attr('y', (r) => y(r.alteracoes) - 5)
+        .attr('text-anchor', 'middle').text((r) => nf(r.alteracoes));
+      const passo = Math.ceil(rows.length / Math.max(1, Math.floor(w / 48)));
+      g.append('text').attr('x', (r) => x(r.mes) + x.bandwidth() / 2).attr('y', h - 6).attr('text-anchor', 'middle')
+        .text((r, i) => (i % passo === 0 ? mesBR(r.mes) : ''));
+      g.append('rect').attr('x', (r) => x(r.mes)).attr('width', x.bandwidth()).attr('y', m.t).attr('height', h - m.t - m.b)
+        .style('fill', 'transparent')
+        .on('pointermove', (ev, r) => {
+          const [mx, my] = d3.pointer(ev, el);
+          dica.attr('hidden', null).text(`${mesBR(r.mes)}: ${nf(r.alteracoes)} alterações, ${nf(r.fora_regra)} fora da regra`)
+            .style('left', `${Math.min(mx + 12, w - 220)}px`).style('top', `${my + 12}px`);
+        })
+        .on('pointerleave', () => dica.attr('hidden', true));
+    },
+  });
+
+  dash.draw('t-pessoas', (tb) => {
+    const d = dash.data('por_pessoa');
+    tb.replaceChildren();
+    if (d.status !== 'ok') return;
+    for (const r of d.data) {
+      const tr = tb.insertRow();
+      tr.dataset.key = encodeURIComponent(r.quem);
+      tr.insertCell().textContent = r.quem;
+      tr.insertCell().textContent = r.funcao || '';
+      for (const [v, cls] of [[r.alteracoes], [r.fora_regra], [r.maior_para], [r.mediana_dias]]) {
+        const td = tr.insertCell(); td.className = 'av-n'; td.textContent = nf(v);
+      }
+      tr.insertCell().textContent = dataBR(r.ultima);
+    }
+  });
+
+  dash.draw('t-alteracoes', (tb) => {
+    const d = dash.data('alteracoes');
+    tb.replaceChildren();
+    if (d.status !== 'ok') return;
+    const p = dash.params();
+    const soFora = document.getElementById('f-fora')?.checked;
+    const pend = document.getElementById('f-pendentes')?.checked ?? true;
+    const rows = window.avFiltrar(d.data, p).filter((r) => (!soFora || r.fora_da_regra) && (pend || r.situacao === 'Identificado'));
+    if (!rows.length) {
+      const td = tb.insertRow().insertCell(); td.colSpan = 12; td.className = 'av-muted'; td.textContent = 'Nenhuma alteração no filtro escolhido.';
+      return;
+    }
+    for (const r of rows) {
+      const tr = tb.insertRow();
+      tr.dataset.key = `${encodeURIComponent(r.plano)},${r.alteracao_no_plano}`;
+      if (r.fora_da_regra) tr.className = 'av-fora';
+      tr.insertCell().textContent = r.plano;
+      tr.insertCell().textContent = r.unidade;
+      tr.insertCell().textContent = r.data ? (r.data_aproximada ? `até ${dataBR(r.data)}` : dataBR(r.data)) : '—';
+      const q = tr.insertCell(); q.textContent = r.quem; if (r.situacao !== 'Identificado') q.className = 'av-muted';
+      tr.insertCell().textContent = r.funcao || '';
+      for (const v of [r.de_meses, r.para_meses]) { const td = tr.insertCell(); td.className = 'av-n'; td.textContent = nf(v); }
+      tr.insertCell().textContent = dataBR(r.nova_validade);
+      const dv = tr.insertCell(); dv.className = 'av-n'; dv.textContent = nf(r.dias_apos_vencimento);
+      tr.insertCell().textContent = r.vendedora;
+      const ss = tr.insertCell(); ss.className = 'av-n'; ss.textContent = nf(r.sessoes_restantes);
+      const regra = tr.insertCell();
+      const chip = (t, c) => { const s = document.createElement('span'); s.className = `av-chip ${c}`; s.textContent = t; regra.append(s); };
+      if (r.acima_12_meses) chip('acima de 12 meses', 'av-c-ruim');
+      if (r.fora_da_gerencia) chip('fora da gerência', 'av-c-ruim');
+      if (r.alteracao_repetida) chip(`${r.alteracao_no_plano}ª alteração`, 'av-c-ruim');
+      if (r.depois_do_vencimento) chip('plano vencido', 'av-c-alerta');
+      if (r.situacao === 'Identificado' && !r.fora_da_regra) chip('dentro da regra', 'av-c-ok');
+      if (r.situacao !== 'Identificado') chip(r.situacao.toLowerCase(), '');
+    }
+  });
+</script>

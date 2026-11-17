@@ -13,6 +13,9 @@
 | 08–09/10 | Alterações pedidas na apresentação e no documento (ver abaixo). |
 | 09/10 | Descoberto no Belle onde ver quem alterou a validade (Venda de Planos → clicar no plano → Auditoria). Auditoria dos 91 planos concluída e planilha do Google preenchida (https://docs.google.com/spreadsheets/d/1xnAqRj10vH_LsChbJBa4KbcUz3YRAouUCUHCOichDKk/edit?usp=sharing). |
 
+| 16/11 | Teste do endpoint da Auditoria a partir da nuvem com o plano 408797510: 401 "Token inválido ou bloqueado" (com e sem token, header e cookie). O site do Belle mostra que a tela de Auditoria usa os campos `dt`, `hora`, `usu`, `acao`, `detalhes` e `ip`; o login exige captcha. A API de integração tem um módulo `auditoria/...` que responde 401 ao nosso token (existe, mas não está liberado). |
+| 17/11 | Painel "Auditoria de validade dos planos" (https://claude.ai/artifact/8cbaXTrQ3daPqc8TJdESqr): foto diária pela API, botão de favoritos para a Auditoria do Belle com planilha-ponte, funções a partir das planilhas do RH. Gerência definida pelo usuário: supervisoras sênior e comercial, Aisi e Alyatan. |
+
 ## Alterações pedidas pelo usuário
 
 Na apresentação "Validade do plano":

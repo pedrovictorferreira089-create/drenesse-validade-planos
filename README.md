@@ -31,18 +31,27 @@ Por função: recepção 50 planos (55%), central 19 (21%), coordenação 17 (19
 3. Venceu com sessões em aberto: para renovar, reavaliação e **multa de 30%** sobre o valor das sessões restantes, pelo preço pago por sessão. Exemplo: plano de R$ 1.000 com 10 sessões, fez 2, restam 8 = R$ 800 → multa de R$ 240. (Decisão do chefe: substitui a ideia anterior de exigir um plano novo.)
 4. Auditoria recorrente: data alterada fora da regra é passível de advertência.
 
+### Painel de auditoria (desde 17/11/2026)
+
+Painel **Auditoria de validade dos planos**: https://claude.ai/artifact/8cbaXTrQ3daPqc8TJdESqr (fica privado até ser compartilhado pelo menu Compartilhar).
+- **Todo dia (automático):** uma rotina tira a foto da validade de todos os planos com sessões a fazer (API de integração, Sessões de Planos), compara com o dia anterior e registra cada validade que mudou (`scripts/rotina_diaria.sh`). Os dados ficam em `dados/monitor/`.
+- **Quem alterou:** só a Auditoria do Belle mostra, e ela só responde a quem está logado no navegador (testado da nuvem em 16/11: 401 "Token inválido ou bloqueado"). A gerência clica num **botão de favoritos** no Belle, que consulta a Auditoria dos planos da fila e grava o resultado numa planilha-ponte (Google Apps Script) lida pela rotina. Instalação em [botao/COMO_INSTALAR.md](botao/COMO_INSTALAR.md).
+- **Regra aplicada:** fora da regra = nova validade acima de 12 meses da venda, ou alteração feita fora da gerência, ou segunda alteração que aumenta a validade. Gerência = supervisoras sênior e comercial e a direção (Aisi e Alyatan), conforme `dados/monitor/funcoes.csv` (montado das planilhas do RH). "Plano já vencido" é um alerta à parte (renovar exige reavaliação e multa de 30%, que o Belle não mostra).
+- **Na primeira foto (17/11):** 15.570 planos com sessões a fazer; 105 planos vendidos em 2026 com validade acima de 12 meses, dos quais **24 passaram de 12 meses depois de 06/10** (não estavam nos 91). Fila inicial da Auditoria: 1.572 planos (24 de 2026 acima de 12 meses, 261 de 2026 com 7 a 12 meses, 1.287 de 2025 acima de 12 meses).
+
 ### Pendências em aberto
 1. Fazer uma versão da apresentação (ou um reforço) para **recepção, coordenação e central**, que foram quem mais alterou datas.
 2. Bloquear a alteração de validade no Belle pela **permissão de usuário** (só gerência).
 3. Gerência decidir as alterações no contrato (ver documento "Alterações no Contrato") e passar pelo advogado; qualquer redução de validade dos planos já alterados depende do advogado.
 4. Lista semanal (toda segunda) por unidade dos planos que vencem nas próximas 4 semanas, com as sessões que faltam.
-5. Auditoria recorrente: repetir a consulta de quem alterou a validade (método em docs/HISTORICO.md).
+5. Auditoria recorrente: automatizada no painel (acima). Falta instalar a planilha-ponte e o botão (botao/COMO_INSTALAR.md), confirmar a função de 4 pessoas fora das planilhas do RH (Maria Leanne Lopes Alves, Roberta Viana de Oliveira, Vanessa Maria de Oliveira Pereira, Marina Batista Costa Pontes da Silva), se a coordenação (Andreza) conta como gerência e a data em que a regra passou a valer (no painel: 09/10/2026).
 6. Decidir o que fazer com o estoque antigo de planos longos (3.438 ativos acima de 1 ano).
 
 ## Materiais
 
 | Material | Link / arquivo | Situação |
 |---|---|---|
+| Painel "Auditoria de validade dos planos" (atualizado todo dia) | https://claude.ai/artifact/8cbaXTrQ3daPqc8TJdESqr | **Vigente** |
 | Apresentação "Validade do plano" (reunião com as esteticistas, 15 slides) | https://claude.ai/artifact/N6WVpPMexBvXTiEeitmrzn · PDF em `apresentacao/` | **Vigente** |
 | Alterações no Contrato (documento para a gerência) | https://claude.ai/artifact/L9v2wWCPJ7dhQ82sXT49wB | **Vigente**, aguarda decisão da gerência |
 | Planilha "Quem alterou a validade" (91 planos) | https://docs.google.com/spreadsheets/d/1xnAqRj10vH_LsChbJBa4KbcUz3YRAouUCUHCOichDKk/edit?usp=sharing · cópia sem nomes de clientes em `dados/auditoria_91_planos.csv` | **Concluída** em 09/10 |
@@ -60,4 +69,8 @@ Os links abrem só para a conta dona dos relatórios. O conteúdo de cada um est
 | `docs/RELATORIOS.md` | Conteúdo detalhado dos relatórios publicados e do documento do contrato |
 | `apresentacao/` | PDF da apresentação "Validade do plano" |
 | `dados/auditoria_91_planos.csv` | Os 91 planos auditados: unidade, datas, vendedora, quem alterou, de/para (sem nomes de clientes) |
+| `dados/monitor/` | Foto diária da validade, alterações detectadas, respostas da Auditoria do Belle, funções do RH e configuração do painel |
+| `scripts/monitor_validade.py`, `gerar_painel.py`, `sync_auditoria.py`, `rotina_diaria.sh` | Rotina diária do painel (foto pela API, dados do painel, troca com a planilha-ponte) |
+| `botao/` | Botão de favoritos da Auditoria (fonte), código do Apps Script da planilha-ponte e instruções |
+| `painel/` | Página e dados do painel, como publicados |
 | `scripts/belle_desc_validade.py` | Gerador da planilha de descontos e validade a partir da API do Belle (token na variável `BELLE_TOKEN`, nunca no código) |
