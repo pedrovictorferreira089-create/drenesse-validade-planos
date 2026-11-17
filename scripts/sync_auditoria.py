@@ -102,6 +102,8 @@ def respostas():
 
 def fila():
     rows = json.load(open(os.path.join(RAIZ, "painel", "fila.json")))["rows"]
+    # O apóstrofo faz a planilha guardar a data como texto (sem ele vira data e volta em outro formato).
+    rows = [{**r, "venda": "'" + r["venda"]} for r in rows]
     r = chamar(corpo={"k": CFG["chave"], "acao": "fila", "linhas": rows})
     print(f"Fila enviada à planilha-ponte: {r.get('n')} planos.")
 

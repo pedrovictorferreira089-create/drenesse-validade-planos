@@ -70,8 +70,17 @@
   let comAlteracao = 0;
   let erros = 0;
   let parou = false;
+  // A data da venda chega como AAAA-MM-DD; se a planilha tiver convertido em data, normaliza.
+  const diaVenda = (v) => {
+    const m = String(v).match(/^'?(\d{4}-\d{2}-\d{2})/);
+    if (m) return m[1];
+    const d = new Date(v);
+    return isNaN(d) ? '' : dia(d);
+  };
   for (let i = 0; i < fila.length; i++) {
     const p = fila[i];
+    p.venda = diaVenda(p.venda);
+    if (!p.venda) { erros++; continue; }
     msg(`Auditoria de validade: consultando ${i + 1} de ${fila.length} planos… (não feche esta aba)`);
     const q = new URLSearchParams({
       codOrcamento: p.plano, dataIni: `${p.venda}T03:00:00.000Z`, dataFim: `${dia(amanha)}T03:00:00.000Z`,

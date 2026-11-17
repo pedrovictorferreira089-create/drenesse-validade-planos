@@ -10,7 +10,7 @@ Rotina diária (nuvem) ──fila de planos──▶ Planilha-ponte (Google Apps
         └──────────── lê as respostas ◀───────────┘◀──── grava quem alterou ─────────┘
 ```
 
-## 1. Planilha-ponte (uma vez, ~5 minutos, quem configura: Pedro)
+## 1. Planilha-ponte (uma vez, ~5 minutos, quem configura: Pedro) — feito em 17/11/2026
 
 1. Crie uma planilha nova no Google Drive, com o nome **Auditoria de validade – ponte**.
 2. Menu **Extensões → Apps Script**. Apague o que estiver no editor e cole o conteúdo de `apps_script_pronto.gs`
