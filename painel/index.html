@@ -150,17 +150,12 @@
     <div class="av-kpi av-ruim" id="k-fora">
       <div class="av-kpi-n" data-draw="k-fora" data-source="kpis" data-field="fora_regra">—</div>
       <div class="av-kpi-l">Fora da regra</div>
-      <div class="av-kpi-d">passou de 12 meses, foi feita fora da gerência ou repetiu no plano</div>
+      <div class="av-kpi-d">passou de 12 meses da venda ou aumentou de novo a validade de um plano já alterado</div>
     </div>
     <div class="av-kpi av-ruim" id="k-acima">
       <div class="av-kpi-n" data-draw="k-acima" data-source="kpis" data-field="acima_12">—</div>
       <div class="av-kpi-l">Acima de 12 meses da venda</div>
       <div class="av-kpi-d">maior: <span data-draw="k-maior" data-source="kpis" data-field="maior_para">—</span> meses</div>
-    </div>
-    <div class="av-kpi av-ruim" id="k-gerencia">
-      <div class="av-kpi-n" data-draw="k-gerencia" data-source="kpis" data-field="fora_gerencia">—</div>
-      <div class="av-kpi-l">Feitas fora da gerência</div>
-      <div class="av-kpi-d">só supervisoras sênior e comercial e a direção podem alterar</div>
     </div>
     <div class="av-kpi av-alerta" id="k-vencido">
       <div class="av-kpi-n" data-draw="k-vencido" data-source="kpis" data-field="depois_vencido">—</div>
@@ -257,7 +252,7 @@
     <div>
       <p>Todo dia uma rotina lê no Belle a validade de todos os planos com sessões a fazer e compara com o dia anterior. Cada data que mudou entra nesta página no dia seguinte.</p>
       <p>Quem alterou só aparece na Auditoria do Belle (Venda de Planos, plano, Auditoria), que o Belle libera apenas para quem está logado. Por isso a gerência usa um botão de favoritos no Belle: ele consulta a Auditoria dos planos da fila e manda o resultado para cá.</p>
-      <p>"Fora da regra" quer dizer que a nova validade passou de 12 meses da venda, que a alteração foi feita por alguém fora da gerência ou que o plano já tinha sido alterado antes. O motivo registrado e a multa de 30% não aparecem no Belle de forma que dê para conferir aqui.</p>
+      <p>"Fora da regra" quer dizer que a nova validade passou de 12 meses da venda ou que a validade de um plano já alterado foi aumentada de novo. Quem alterou aparece em todas as linhas, mas a função da pessoa não entra nessa conta. O motivo registrado e a multa de 30% não aparecem no Belle de forma que dê para conferir aqui.</p>
       <p>As 91 alterações conferidas à mão em 09/10/2026 entram como "Auditoria manual". As funções vêm das planilhas do RH. Nomes de clientes não aparecem nesta página.</p>
     </div>
   </details>
@@ -317,7 +312,6 @@
         fora_regra: id.filter((r) => r.fora_da_regra).length,
         acima_12: id.filter((r) => r.acima_12_meses).length,
         maior_para: id.length ? Math.max(...id.map((r) => r.para_meses || 0)) : 0,
-        fora_gerencia: id.filter((r) => r.fora_da_gerencia).length,
         repetidas: id.filter((r) => r.alteracao_repetida).length,
         depois_vencido: dias.length,
         mediana_dias: dias.length ? (dias.length % 2 ? dias[m] : Math.round((dias[m - 1] + dias[m]) / 2)) : 0,
@@ -442,7 +436,6 @@
   dash.draw('k-fora', texto('kpis', 'fora_regra'));
   dash.draw('k-acima', texto('kpis', 'acima_12'));
   dash.draw('k-maior', texto('kpis', 'maior_para'));
-  dash.draw('k-gerencia', texto('kpis', 'fora_gerencia'));
   dash.draw('k-vencido', texto('kpis', 'depois_vencido'));
   dash.draw('k-mediana', texto('kpis', 'mediana_dias'));
   dash.draw('k-aguardando', texto('kpis', 'aguardando'));
@@ -577,7 +570,6 @@
       const regra = tr.insertCell();
       const chip = (t, c) => { const s = document.createElement('span'); s.className = `av-chip ${c}`; s.textContent = t; regra.append(s); };
       if (r.acima_12_meses) chip('acima de 12 meses', 'av-c-ruim');
-      if (r.fora_da_gerencia) chip('fora da gerência', 'av-c-ruim');
       if (r.alteracao_repetida) chip(`${r.alteracao_no_plano}ª alteração`, 'av-c-ruim');
       if (r.depois_do_vencimento) chip('plano vencido', 'av-c-alerta');
       if (r.situacao === 'Identificado' && !r.fora_da_regra) chip('dentro da regra', 'av-c-ok');

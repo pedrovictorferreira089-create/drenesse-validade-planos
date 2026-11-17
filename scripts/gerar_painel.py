@@ -11,9 +11,8 @@ precisam ser consultados na Auditoria do Belle, por prioridade) e monitor.json (
 
 Regra vigente: só a gerência altera, uma única vez, e no máximo até 12 meses da venda.
 - acima_12: a nova validade passa de 12 meses contados da venda;
-- nao_gerencia: quem alterou não é da gerência (supervisoras sênior e comercial e a direção, em funcoes.csv);
 - repetida: segunda alteração ou mais no mesmo plano que aumenta a validade (reduzir para voltar à regra não conta);
-- fora_regra: qualquer uma das três. depois_vencido (alterou com o plano já vencido) é um alerta à parte:
+- fora_regra: qualquer uma das duas (quem alterou é mostrado, mas não entra na regra). depois_vencido (alterou com o plano já vencido) é um alerta à parte:
   renovar plano vencido exige reavaliação e multa de 30%, que o Belle não mostra aqui.
 """
 import calendar
@@ -171,7 +170,6 @@ def main():
         if e.get("data_aprox") and e["data"] and venc_ant:
             dias = (e["data"] - venc_ant).days
         acima = bool(nova and venda and nova > mais_meses(venda, limite))
-        nao_ger = bool(e["quem"]) and not (p and p["gerencia"] == "sim")
         # Segunda alteração que aumenta a validade (uma redução para voltar à regra não conta como repetição).
         repetida = ordem[e["id"]] > 1 and not (e["de"] and e["para"] and e["para"] < e["de"])
         linhas.append({
@@ -189,9 +187,9 @@ def main():
             "dias_apos_vencimento": dias,
             "sessoes_restantes": e["restantes"],
             "alteracao_no_plano": ordem[e["id"]],
-            "acima_12_meses": acima, "fora_da_gerencia": nao_ger, "alteracao_repetida": repetida,
+            "acima_12_meses": acima, "alteracao_repetida": repetida,
             "depois_do_vencimento": bool(dias is not None and dias > 0),
-            "fora_da_regra": acima or nao_ger or repetida,
+            "fora_da_regra": acima or repetida,
             "depois_da_vigencia": bool(e["data"] and e["data"] >= vigencia),
             "situacao": e["status"], "origem": e["origem"],
         })
