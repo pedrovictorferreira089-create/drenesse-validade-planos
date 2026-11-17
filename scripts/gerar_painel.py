@@ -186,6 +186,10 @@ def main():
             "nova_validade": nova.isoformat() if nova else "",
             "dias_apos_vencimento": dias,
             "sessoes_restantes": e["restantes"],
+            # Situação do plano hoje (foto do dia): ativo = tem sessões a fazer e ainda não venceu.
+            "validade_atual": e["validade_hoje"].isoformat() if e.get("validade_hoje") else "",
+            "meses_validade_atual": meses(venda, e["validade_hoje"]) if venda and e.get("validade_hoje") else None,
+            "plano_ativo": bool(e.get("validade_hoje") and e["validade_hoje"] >= hoje and (e["restantes"] or 0) > 0),
             "alteracao_no_plano": ordem[e["id"]],
             "acima_12_meses": acima, "alteracao_repetida": repetida,
             "depois_do_vencimento": bool(dias is not None and dias > 0),

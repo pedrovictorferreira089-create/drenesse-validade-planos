@@ -153,9 +153,9 @@
       <div class="av-kpi-d">passou de 12 meses da venda ou aumentou de novo a validade de um plano já alterado</div>
     </div>
     <div class="av-kpi av-ruim" id="k-acima">
-      <div class="av-kpi-n" data-draw="k-acima" data-source="kpis" data-field="acima_12">—</div>
-      <div class="av-kpi-l">Acima de 12 meses da venda</div>
-      <div class="av-kpi-d">maior: <span data-draw="k-maior" data-source="kpis" data-field="maior_para">—</span> meses</div>
+      <div class="av-kpi-n" data-draw="k-acima" data-source="kpis" data-field="planos_acima_12">—</div>
+      <div class="av-kpi-l">Planos acima de 12 meses da venda</div>
+      <div class="av-kpi-d"><span data-draw="k-acima-ativos" data-source="kpis" data-field="planos_acima_12_ativos">—</span> ainda ativos com validade acima de 12 meses · maior: <span data-draw="k-maior" data-source="kpis" data-field="maior_para">—</span> meses</div>
     </div>
     <div class="av-kpi av-alerta" id="k-vencido">
       <div class="av-kpi-n" data-draw="k-vencido" data-source="kpis" data-field="depois_vencido">—</div>
@@ -349,6 +349,8 @@
         identificadas: id.length,
         fora_regra: id.filter((r) => r.fora_da_regra).length,
         acima_12: id.filter((r) => r.acima_12_meses).length,
+        planos_acima_12: new Set(id.filter((r) => r.acima_12_meses).map((r) => r.plano)).size,
+        planos_acima_12_ativos: new Set(id.filter((r) => r.acima_12_meses && r.plano_ativo && r.meses_validade_atual > 12).map((r) => r.plano)).size,
         maior_para: id.length ? Math.max(...id.map((r) => r.para_meses || 0)) : 0,
         repetidas: id.filter((r) => r.alteracao_repetida).length,
         depois_vencido: dias.length,
@@ -472,7 +474,8 @@
       datas.length ? ` As alterações registradas vão de ${dataBR(datas[0])} a ${dataBR(datas[datas.length - 1])}.` : '');
   });
   dash.draw('k-fora', texto('kpis', 'fora_regra'));
-  dash.draw('k-acima', texto('kpis', 'acima_12'));
+  dash.draw('k-acima', texto('kpis', 'planos_acima_12'));
+  dash.draw('k-acima-ativos', texto('kpis', 'planos_acima_12_ativos'));
   dash.draw('k-maior', texto('kpis', 'maior_para'));
   dash.draw('k-vencido', texto('kpis', 'depois_vencido'));
   dash.draw('k-mediana', texto('kpis', 'mediana_dias'));
