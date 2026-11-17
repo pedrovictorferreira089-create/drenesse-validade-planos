@@ -80,7 +80,6 @@
       <input type="date" class="av-data" id="f-ate" min="2020-01-01" max="2030-12-31" aria-label="Alterado até">
     </label>
     <div class="av-atalhos">
-      <button type="button" class="av-botao" id="b-regra">Desde a regra (09/10/2026)</button>
       <button type="button" class="av-botao" id="b-limpar">Todo o período</button>
     </div>
     <label for="f-unidade">Unidade
@@ -224,9 +223,7 @@
   // Período da alteração: duas datas (vazias = sem limite). Só aceita data completa e válida.
   const fde = document.getElementById('f-de');
   const fate = document.getElementById('f-ate');
-  const bRegra = document.getElementById('b-regra');
   const bLimpar = document.getElementById('b-limpar');
-  const REGRA = '2026-10-09';
   const aplicarData = (el, nome) => {
     if (!el) return;
     el.addEventListener('change', () => {
@@ -237,7 +234,6 @@
   };
   aplicarData(fde, 'de');
   aplicarData(fate, 'ate');
-  if (bRegra) bRegra.addEventListener('click', () => dash.setParams({de: REGRA, ate: ''}));
   if (bLimpar) bLimpar.addEventListener('click', () => dash.setParams({de: '', ate: ''}));
   const fu = document.getElementById('f-unidade');
   if (fu) fu.addEventListener('change', () => dash.setParams({unidade: fu.value}));
@@ -246,7 +242,6 @@
     if (fde && document.activeElement !== fde) fde.value = p.de || '';
     if (fate && document.activeElement !== fate) fate.value = p.ate || '';
     if (fu && document.activeElement !== fu) fu.value = p.unidade || '';
-    if (bRegra) bRegra.classList.toggle('av-ativo', p.de === REGRA && !p.ate);
     if (bLimpar) bLimpar.classList.toggle('av-ativo', !p.de && !p.ate);
   });
   document.querySelectorAll('#f-fora, #f-pendentes').forEach((el) => el.addEventListener('change', () => dash.draw('t-alteracoes')));
