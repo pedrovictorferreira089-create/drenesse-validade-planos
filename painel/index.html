@@ -1,30 +1,60 @@
 <meta name="dash-one-writer">
 <style>
-  .av { display: grid; gap: var(--cds-gap-xl); font-family: var(--font-anthropic-sans); color: var(--color-fg); }
-  .av-head { display: grid; gap: var(--cds-gap-sm); }
+  /* Identidade Drenesse: fundo creme, carmim dominante, coral só em detalhes, gotas e formas fluidas. Visual claro fixo. */
+  .av {
+    --dr-carmim: #C60039; --dr-carmim-escuro: #9E002E; --dr-coral: #F2987B; --dr-coral-texto: #A8452A;
+    --dr-creme: #FAF1EA; --dr-creme-rosado: #F5E3D7; --dr-grafite: #2C2C2C; --dr-branco: #FFFFFF;
+    --dr-cinza: #6E5D57; --dr-linha: #EAD3C6; --dr-dentro: #E2C0AE;
+    --dr-titulo: Georgia, Cambria, "Times New Roman", serif;
+    --dr-texto: Calibri, Carlito, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --color-fg: var(--dr-grafite); --color-fg-muted: var(--dr-cinza); --color-bg: var(--dr-creme);
+    --color-panel: var(--dr-branco); --color-border-line: var(--dr-linha);
+    --color-bad: var(--dr-carmim); --color-warn: var(--dr-coral-texto); --color-ok: var(--dr-cinza);
+    --cds-chart-status-critical: var(--dr-carmim); --cds-chart-muted: var(--dr-dentro); --cds-chart-axis: var(--dr-linha);
+    --cds-text-secondary: var(--dr-cinza); --cds-surface-popover: var(--dr-branco); --cds-border: var(--dr-linha);
+    --font-anthropic-sans: var(--dr-texto); --font-anthropic-serif: var(--dr-titulo);
+    color-scheme: light;
+    display: grid; gap: var(--cds-gap-xl); font-family: var(--dr-texto); font-size: 15px; color: var(--dr-grafite);
+    background: var(--dr-creme); border-radius: 18px; padding: 0 clamp(14px, 3vw, 32px) clamp(20px, 3vw, 36px); overflow: hidden;
+  }
+  .av-banda { position: relative; margin: 0 calc(-1 * clamp(14px, 3vw, 32px)); padding: clamp(22px, 4vw, 40px) clamp(14px, 3vw, 32px) 64px;
+    background: var(--dr-carmim); color: var(--dr-branco); overflow: hidden; }
+  .av-banda .av-onda { position: absolute; left: 0; right: 0; bottom: -1px; width: 100%; height: 46px; display: block; }
+  .av-banda .av-gotas { position: absolute; right: clamp(8px, 4vw, 48px); top: 14px; width: clamp(90px, 16vw, 150px); height: auto; opacity: .95; }
+  .av-banda > * { position: relative; }
+  .av-banda .av-onda, .av-banda .av-gotas { position: absolute; }
+  .av-banda .av-eyebrow { color: #FFD9CC; }
+  .av-banda .av-title { color: var(--dr-branco); max-width: 18ch; }
+  .av-intro { padding-right: clamp(70px, 16vw, 170px); }
+  @media (max-width: 520px) { .av-banda .av-gotas { width: 64px; top: auto; bottom: 30px; right: 14px; } .av-intro { padding-right: 0; } .av-banda { padding-bottom: 76px; } }
+  .av-head { display: grid; gap: var(--cds-gap-md); }
+  .av-intro { display: grid; gap: var(--cds-gap-sm); }
   .av-eyebrow { font-size: var(--cds-font-size-caption); letter-spacing: .06em; text-transform: uppercase; color: var(--color-fg-muted); }
-  .av-title { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0; text-wrap: balance; }
+  .av-title { font-family: var(--dr-titulo); font-weight: 400; font-size: clamp(1.7rem, 4vw, 2.5rem); line-height: 1.1; margin: 0; text-wrap: balance; }
   .av-lead { font-size: var(--cds-font-size-heading); margin: 0; max-width: 62ch; line-height: 1.45; }
   .av-status { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin: 0; }
-  .av-status b, .av-lead b { font-weight: var(--cds-font-weight-medium); font-variant-numeric: tabular-nums; }
+  .av-status b, .av-lead b { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .av-lead b { color: var(--dr-carmim); }
   .av-filtros { display: flex; flex-wrap: wrap; gap: var(--cds-gap-md); align-items: end; }
   .av-filtros label { display: grid; gap: var(--cds-gap-xs); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
-  .av-data { font: inherit; color: var(--color-fg); background-color: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: 5px 8px; min-height: 34px; }
+  .av-data { font: inherit; color: var(--color-fg); background-color: var(--dr-branco); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: 5px 8px; min-height: 34px; }
   .av-atalhos { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm); }
-  .av-botao { font: inherit; font-size: var(--cds-font-size-caption); color: var(--color-fg); background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: 999px; padding: 6px 12px; cursor: pointer; }
-  .av-botao:hover { border-color: var(--color-fg-muted); }
-  .av-botao:focus-visible, .av-data:focus-visible { outline: 2px solid var(--color-fg); outline-offset: 2px; }
-  .av-botao.av-ativo { background: var(--color-fg); color: var(--color-bg); border-color: var(--color-fg); }
+  .av-botao { font: inherit; font-size: var(--cds-font-size-caption); color: var(--dr-carmim); background: var(--dr-branco); border: 1px solid var(--color-border-line); border-radius: 999px; padding: 6px 12px; cursor: pointer; }
+  .av-botao:hover { border-color: var(--dr-carmim); }
+  .av-botao:focus-visible, .av-data:focus-visible, .av .dash-select:focus-visible { outline: 2px solid var(--dr-carmim); outline-offset: 2px; }
+  .av .dash-select { background-color: var(--dr-branco); color: var(--dr-grafite); border-color: var(--dr-linha); }
+  .av-botao.av-ativo { background-color: var(--dr-carmim); color: var(--dr-branco); border-color: var(--dr-carmim); }
   .av-check { display: flex !important; align-items: center; gap: var(--cds-gap-xs); grid-auto-flow: column; color: var(--color-fg) !important; font-size: var(--cds-font-size-body) !important; }
   .av-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--cds-gap-md); }
-  .av-kpi { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: grid; gap: var(--cds-gap-xs); align-content: start; }
-  .av-kpi-n { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: 2.1rem; line-height: 1; font-variant-numeric: tabular-nums; }
-  .av-kpi-l { font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); }
+  .av-kpi { background: var(--dr-branco); border: 1px solid var(--dr-linha); border-radius: 14px 14px 14px 4px; padding: var(--cds-pad-lg); display: grid; gap: var(--cds-gap-xs); align-content: start; }
+  .av-kpi-n { font-family: var(--dr-titulo); color: var(--dr-grafite); font-weight: 400; font-size: 2.1rem; line-height: 1; font-variant-numeric: tabular-nums; }
+  .av-kpi-l { font-size: var(--cds-font-size-body); font-weight: 700; display: flex; align-items: center; gap: 7px; }
   .av-kpi-d { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
   .av-kpi.av-ruim .av-kpi-n { color: var(--color-bad); }
   .av-kpi.av-alerta .av-kpi-n { color: var(--color-warn); }
   .av-sec { display: grid; gap: var(--cds-gap-md); min-width: 0; }
-  .av-sec h2 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0; }
+  .av-sec h2 { font-family: var(--dr-titulo); font-size: 1.35rem; font-weight: 400; color: var(--dr-carmim); margin: 0; display: flex; align-items: center; gap: 9px; }
+  .av-sec h2::before { content: ''; width: 12px; height: 15px; flex: none; background: var(--dr-coral); clip-path: path('M6 0 C6 0 0 7.2 0 9.4 A6 6 0 0 0 12 9.4 C12 7.2 6 0 6 0Z'); }
   .av-sec > p { margin: 0; color: var(--color-fg-muted); max-width: 70ch; }
   .av-grade { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--cds-gap-xl); }
   .av-grafico { position: relative; min-height: 120px; min-width: 0; }
@@ -32,32 +62,46 @@
   .av-grafico text { fill: var(--cds-text-secondary); font-size: var(--cds-font-size-caption); font-family: var(--font-anthropic-sans); }
   .av-grafico .av-rot { fill: var(--color-fg); }
   .av-grafico .av-num { fill: var(--color-fg); font-variant-numeric: tabular-nums; }
-  .av-dica { position: absolute; pointer-events: none; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); box-shadow: var(--cds-shadow-popover); border-radius: var(--cds-radius); padding: var(--cds-pad-sm) var(--cds-pad-md); font-size: var(--cds-font-size-caption); color: var(--color-fg); white-space: nowrap; z-index: 2; }
+  .av-dica { position: absolute; pointer-events: none; background: var(--dr-branco); border: 1px solid var(--cds-border); box-shadow: var(--cds-shadow-popover); border-radius: var(--cds-radius); padding: var(--cds-pad-sm) var(--cds-pad-md); font-size: var(--cds-font-size-caption); color: var(--color-fg); white-space: nowrap; z-index: 2; }
   .av-legenda { display: flex; flex-wrap: wrap; gap: var(--cds-gap-md); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
   .av-legenda span { display: inline-flex; align-items: center; gap: 6px; }
   .av-legenda i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
-  .av-tab-wrap { overflow: auto; max-height: 640px; border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); }
+  .av-tab-wrap { overflow: auto; max-height: 640px; border: 1px solid var(--dr-linha); border-radius: 12px; background: var(--dr-branco); }
   .av-tab { border-collapse: collapse; width: 100%; font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
-  .av-tab th { position: sticky; top: 0; background: var(--color-panel); text-align: left; font-weight: var(--cds-font-weight-medium); padding: var(--cds-pad-sm) var(--cds-pad-md); border-bottom: 1px solid var(--color-border-line); white-space: nowrap; z-index: 1; }
+  .av-tab th { position: sticky; top: 0; background: var(--dr-creme-rosado); color: var(--dr-carmim-escuro); text-align: left; font-weight: 700; padding: var(--cds-pad-sm) var(--cds-pad-md); border-bottom: 1px solid var(--color-border-line); white-space: nowrap; z-index: 1; }
   .av-tab td { padding: var(--cds-pad-sm) var(--cds-pad-md); border-bottom: 1px solid var(--color-border-line); vertical-align: top; }
   .av-tab td.av-n, .av-tab th.av-n { text-align: right; }
   .av-tab tr.av-fora td:first-child { box-shadow: inset 3px 0 0 var(--color-bad); }
   .av-chip { display: inline-block; border-radius: 999px; padding: 1px 8px; margin: 1px 4px 1px 0; font-size: 11px; white-space: nowrap; border: 1px solid var(--color-border-line); }
-  .av-chip.av-c-ruim { color: var(--color-bad); border-color: var(--color-bad); }
-  .av-chip.av-c-alerta { color: var(--color-warn); border-color: var(--color-warn); }
+  .av-chip.av-c-ruim { color: var(--dr-carmim); border-color: var(--dr-carmim); background: #FCEBEF; }
+  .av-chip.av-c-alerta { color: var(--dr-coral-texto); border-color: var(--dr-coral); background: #FDEDE6; }
+  .av-tab tbody tr:nth-child(even) td { background: #FFFBF8; }
   .av-chip.av-c-ok { color: var(--color-ok); border-color: var(--color-ok); }
   .av-muted { color: var(--color-fg-muted); }
+  .av-regra li::marker { color: var(--dr-carmim); font-family: var(--dr-titulo); }
   .av-regra { margin: 0; padding-left: 1.2em; display: grid; gap: var(--cds-gap-xs); max-width: 70ch; }
   details.av-notas { border-top: 1px solid var(--color-border-line); padding-top: var(--cds-pad-md); }
-  details.av-notas summary { cursor: pointer; font-weight: var(--cds-font-weight-medium); }
+  details.av-notas summary { cursor: pointer; font-weight: 700; color: var(--dr-carmim); }
   details.av-notas div { display: grid; gap: var(--cds-gap-sm); margin-top: var(--cds-gap-md); max-width: 72ch; color: var(--color-fg-muted); }
   details.av-notas p { margin: 0; }
 </style>
 
 <div class="av">
   <header class="av-head" id="topo">
-    <div class="av-eyebrow">Drenesse · Petrópolis, Lagoa Nova, Capim Macio e Norte Shopping</div>
-    <h1 class="av-title">Auditoria de validade dos planos</h1>
+    <div class="av-banda">
+      <svg class="av-gotas" viewBox="0 0 150 120" aria-hidden="true">
+        <path d="M98 8 C98 8 70 44 70 60 a28 28 0 0 0 56 0 C126 44 98 8 98 8Z" fill="#F2987B" opacity=".9"/>
+        <path d="M44 46 C44 46 28 66 28 75 a16 16 0 0 0 32 0 C60 66 44 46 44 46Z" fill="#FAF1EA" opacity=".35"/>
+        <path d="M134 74 C134 74 124 87 124 93 a10 10 0 0 0 20 0 C144 87 134 74 134 74Z" fill="#FAF1EA" opacity=".55"/>
+      </svg>
+      <div class="av-intro">
+        <div class="av-eyebrow">Drenesse · Petrópolis, Lagoa Nova, Capim Macio e Norte Shopping</div>
+        <h1 class="av-title">Auditoria de validade dos planos</h1>
+      </div>
+      <svg class="av-onda" viewBox="0 0 1200 46" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M0 26 C150 6 300 44 470 30 C640 16 760 0 930 18 C1050 31 1130 34 1200 22 L1200 46 L0 46Z" fill="#FAF1EA"/>
+      </svg>
+    </div>
     <p class="av-lead">
       <b data-draw="lead-ident" data-source="kpis" data-field="identificadas">—</b> alterações de validade com autoria identificada,
       <b data-draw="lead-fora" data-source="kpis" data-field="fora_regra">—</b> delas fora da regra.
@@ -410,7 +454,12 @@
       const dica = d3.select(el).append('div').attr('class', 'av-dica').attr('hidden', true);
       const g = svg.selectAll('g.l').data(rows).join('g').attr('class', 'l').attr('transform', (r, i) => `translate(0,${i * linha})`);
       g.append('text').attr('class', 'av-rot').attr('x', larguraRot - 8).attr('y', linha / 2).attr('dy', '0.35em')
-        .attr('text-anchor', 'end').text((r) => r[chave]);
+        .attr('text-anchor', 'end').text((r) => r[chave])
+        .each(function () {
+          // Nome maior que o espaço (tela estreita): encurta com reticências; o nome inteiro fica na dica.
+          let t = this.textContent;
+          while (t.length > 4 && this.getComputedTextLength() > larguraRot - 10) { t = t.slice(0, -2); this.textContent = `${t.trimEnd()}…`; }
+        });
       g.append('rect').attr('x', larguraRot).attr('y', 5).attr('height', linha - 10).attr('width', (r) => x(r.fora_regra))
         .style('fill', 'var(--cds-chart-status-critical)');
       g.append('rect').attr('x', (r) => larguraRot + x(r.fora_regra)).attr('y', 5).attr('height', linha - 10)
