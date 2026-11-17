@@ -220,6 +220,7 @@
       <table class="av-tab" data-source="alteracoes" data-row-key="plano,alteracao_no_plano">
         <thead><tr>
           <th data-field="plano">Plano</th>
+          <th data-field="cliente">Cliente</th>
           <th data-field="unidade">Unidade</th>
           <th data-field="data">Data</th>
           <th data-field="quem">Quem alterou</th>
@@ -253,7 +254,7 @@
       <p>Todo dia uma rotina lê no Belle a validade de todos os planos com sessões a fazer e compara com o dia anterior. Cada data que mudou entra nesta página no dia seguinte.</p>
       <p>Quem alterou só aparece na Auditoria do Belle (Venda de Planos, plano, Auditoria), que o Belle libera apenas para quem está logado. Por isso a gerência usa um botão de favoritos no Belle: ele consulta a Auditoria dos planos da fila e manda o resultado para cá.</p>
       <p>"Fora da regra" quer dizer que a nova validade passou de 12 meses da venda ou que a validade de um plano já alterado foi aumentada de novo. Quem alterou aparece em todas as linhas, mas a função da pessoa não entra nessa conta. O motivo registrado e a multa de 30% não aparecem no Belle de forma que dê para conferir aqui.</p>
-      <p>As 91 alterações conferidas à mão em 09/10/2026 entram como "Auditoria manual". As funções vêm das planilhas do RH. Nomes de clientes não aparecem nesta página.</p>
+      <p>As 91 alterações conferidas à mão em 09/10/2026 entram como "Auditoria manual". As funções vêm das planilhas do RH.</p>
     </div>
   </details>
 </div>
@@ -550,7 +551,7 @@
     const pend = document.getElementById('f-pendentes')?.checked ?? true;
     const rows = window.avFiltrar(d.data, p).filter((r) => (!soFora || r.fora_da_regra) && (pend || r.situacao === 'Identificado'));
     if (!rows.length) {
-      const td = tb.insertRow().insertCell(); td.colSpan = 12; td.className = 'av-muted'; td.textContent = 'Nenhuma alteração no filtro escolhido.';
+      const td = tb.insertRow().insertCell(); td.colSpan = 13; td.className = 'av-muted'; td.textContent = 'Nenhuma alteração no filtro escolhido.';
       return;
     }
     for (const r of rows) {
@@ -558,6 +559,7 @@
       tr.dataset.key = `${encodeURIComponent(r.plano)},${r.alteracao_no_plano}`;
       if (r.fora_da_regra) tr.className = 'av-fora';
       tr.insertCell().textContent = r.plano;
+      tr.insertCell().textContent = r.cliente;
       tr.insertCell().textContent = r.unidade;
       tr.insertCell().textContent = r.data ? (r.data_aproximada ? `até ${dataBR(r.data)}` : dataBR(r.data)) : '—';
       const q = tr.insertCell(); q.textContent = r.quem; if (r.situacao !== 'Identificado') q.className = 'av-muted';

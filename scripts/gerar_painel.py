@@ -114,7 +114,7 @@ def main():
         estab = int(estab or f.get("estab") or v.get("estab") or 0)
         return {"id": pid, "unidade": UNIDADES.get(estab, ""), "estab": estab,
                 "venda": d(venda) or d(f.get("venda")) or d(v.get("venda")),
-                "vendedora": v.get("vendedor", ""), "restantes": int(f["restantes"]) if f.get("restantes") else None,
+                "vendedora": v.get("vendedor", ""), "cliente": v.get("cliente") or "", "restantes": int(f["restantes"]) if f.get("restantes") else None,
                 "validade_hoje": d(f.get("validade"))}
 
     eventos = []
@@ -173,7 +173,7 @@ def main():
         # Segunda alteração que aumenta a validade (uma redução para voltar à regra não conta como repetição).
         repetida = ordem[e["id"]] > 1 and not (e["de"] and e["para"] and e["para"] < e["de"])
         linhas.append({
-            "plano": e["id"], "unidade": e["unidade"], "vendedora": e["vendedora"] or "Não informada",
+            "plano": e["id"], "cliente": e["cliente"] or "Não informada", "unidade": e["unidade"], "vendedora": e["vendedora"] or "Não informada",
             "venda": venda.isoformat() if venda else "",
             "data": e["data"].isoformat() if e["data"] else "", "mes": e["data"].strftime("%Y-%m") if e["data"] else "",
             "data_aproximada": bool(e.get("data_aprox")), "hora": e["hora"],

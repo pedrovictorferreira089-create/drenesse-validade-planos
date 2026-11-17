@@ -33,7 +33,7 @@ ESTADO = os.path.join(MON, "estado.json")
 CAMPOS_FOTO = ["id", "estab", "venda", "validade", "vendidas", "restantes", "valor"]
 CAMPOS_ALTER = ["id", "estab", "unidade", "venda", "validade_antes", "validade_depois", "meses_antes", "meses_depois",
                 "foto_anterior", "detectado_em", "restantes", "valor"]
-CAMPOS_VEND = ["id", "estab", "venda", "vendedor", "plano"]
+CAMPOS_VEND = ["id", "estab", "venda", "vendedor", "plano", "cliente"]
 
 
 def api(path, **q):
@@ -123,9 +123,9 @@ def iso(d):
 
 
 def completar_vendedores(ids_por_estab_venda):
-    """Busca em venda_planos a vendedora dos planos que ainda não estão no cadastro (por unidade e trimestre)."""
+    """Busca em venda_planos a vendedora e a cliente dos planos que ainda não estão no cadastro (por unidade e trimestre)."""
     cad = {r["id"]: r for r in ler_csv(VEND)}
-    faltam = {(e, v) for pid, (e, v) in ids_por_estab_venda.items() if pid not in cad}
+    faltam = {(e, v) for pid, (e, v) in ids_por_estab_venda.items() if pid not in cad or cad[pid].get("cliente") is None}
     janelas = {}
     for e, v in faltam:
         ini = dt.date(v.year, 3 * ((v.month - 1) // 3) + 1, 1)
@@ -135,17 +135,40 @@ def completar_vendedores(ids_por_estab_venda):
         for p in api("venda_planos", codEstab=e, dtInicio=ini.strftime("%d/%m/%Y"), dtFim=fim.strftime("%d/%m/%Y")):
             pid = str(p["codOrcamento"])
             cad[pid] = {"id": pid, "estab": e, "venda": iso(br_data(p.get("dataVenda"))),
-                        "vendedor": " ".join((p.get("vendedor") or "").split()), "plano": (p.get("nomePlano") or "").strip()}
+                        "vendedor": " ".join((p.get("vendedor") or "").split()), "plano": (p.get("nomePlano") or "").strip(),
+                        "cliente": " ".join((p.get("cliente") or "").split())}
     for pid, (e, v) in ids_por_estab_venda.items():  # não achados: registra vazio para não buscar de novo
-        cad.setdefault(pid, {"id": pid, "estab": e, "venda": iso(v), "vendedor": "", "plano": ""})
+        if cad.get(pid, {}).get("cliente") is None:
+            cad[pid] = {"id": pid, "estab": e, "venda": iso(v), "vendedor": cad.get(pid, {}).get("vendedor", ""),
+                        "plano": cad.get(pid, {}).get("plano", ""), "cliente": ""}
     gravar_csv(VEND, CAMPOS_VEND, sorted(cad.values(), key=lambda r: r["id"]))
     return cad
+
+
+def atualizar_cadastro():
+    """Vendedora e cliente dos planos que aparecem no painel: alterados (foto ou Auditoria) e vendidos desde 2026 com mais de 6 meses."""
+    foto = {r["id"]: r for r in ler_csv(FOTO)}
+    cad = {r["id"]: r for r in ler_csv(VEND)}
+    interesse = {r["id"]: (int(r["estab"]), dt.date.fromisoformat(r["venda"])) for r in ler_csv(ALTER)}
+    for pid, f in foto.items():
+        venda, validade = dt.date.fromisoformat(f["venda"]), dt.date.fromisoformat(f["validade"])
+        if venda >= dt.date(2026, 1, 1) and (meses(venda, validade) or 0) > 6:
+            interesse[pid] = (int(f["estab"]), venda)
+    for a in ler_csv(os.path.join(MON, "auditoria_belle.csv")):
+        f = foto.get(a["id"]) or cad.get(a["id"])
+        if f and f.get("venda"):
+            interesse[a["id"]] = (int(f.get("estab") or a["estab"]), dt.date.fromisoformat(f["venda"]))
+    completar_vendedores(interesse)
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--hoje", help="data da foto (AAAA-MM-DD); padrão: hoje em Natal")
+    ap.add_argument("--cadastro", action="store_true", help="só completa vendedora e cliente, sem tirar foto")
     a = ap.parse_args()
+    if a.cadastro:
+        atualizar_cadastro()
+        return
     agora = dt.datetime.now(dt.timezone(dt.timedelta(hours=-3)))
     hoje = dt.date.fromisoformat(a.hoje) if a.hoje else agora.date()
     os.makedirs(MON, exist_ok=True)
@@ -154,7 +177,8 @@ def main():
     estado = json.load(open(ESTADO)) if os.path.exists(ESTADO) else {}
     data_anterior = estado.get("ultima_foto", "")
     if data_anterior == hoje.isoformat():
-        print(f"Foto de {hoje} já tirada; nada a fazer.")
+        print(f"Foto de {hoje} já tirada; só completando vendedora e cliente.")
+        atualizar_cadastro()
         return
 
     t0 = time.time()
@@ -186,12 +210,7 @@ def main():
                    "alteracoes_na_ultima_foto": len(novas), "gerado_em": agora.isoformat(timespec="minutes")})
     json.dump(estado, open(ESTADO, "w"), ensure_ascii=False, indent=1)
 
-    # Vendedora dos planos que interessam ao dashboard: alterados, ou vendidos desde 2026 com mais de 6 meses.
-    interesse = {r["id"]: (int(r["estab"]), dt.date.fromisoformat(r["venda"])) for r in ler_csv(ALTER)}
-    for pid, p in foto.items():
-        if p["venda"] >= dt.date(2026, 1, 1) and (meses(p["venda"], p["validade"]) or 0) > 6:
-            interesse[pid] = (p["estab"], p["venda"])
-    completar_vendedores(interesse)
+    atualizar_cadastro()
 
 
 if __name__ == "__main__":
