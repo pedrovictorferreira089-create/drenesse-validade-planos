@@ -62,6 +62,38 @@ def data_iso(s):
     return f"{m[3]}-{m[2]}-{m[1]}" if m else s
 
 
+def bruto_de_para(bruto):
+    """Registros antigos do Belle vêm com 'detalhes' vazio, mas trazem os meses em dt_antiga e dt_nova."""
+    try:
+        o = json.loads(bruto) if bruto else {}
+    except ValueError:
+        return "", ""
+    de, para = str(o.get("dt_antiga") or "").strip(), str(o.get("dt_nova") or "").strip()
+    return (de, para) if de.isdigit() and para.isdigit() else ("", "")
+
+
+def completar_meses():
+    """Preenche de/para das alterações já gravadas sem detalhes, relendo o registro bruto na planilha-ponte."""
+    r = chamar({"acao": "respostas", "k": CFG["chave"], "desde": 0})
+    bruto = {(str(x["plano"]), data_iso(x["data"]), x["hora"], " ".join(x["usuario"].split())): x.get("bruto", "")
+             for x in r.get("linhas", [])}
+    linhas = ler("auditoria_belle.csv")
+    n = 0
+    for a in linhas:
+        if a["de"] and a["para"]:
+            continue
+        de, para = bruto_de_para(bruto.get((a["id"], a["dt"], a["hora"], a["usuario"]), ""))
+        if de:
+            a["de"], a["para"] = de, para
+            n += 1
+    with open(os.path.join(MON, "auditoria_belle.csv"), "w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=CAMPOS_AUD, extrasaction="ignore")
+        w.writeheader()
+        w.writerows(linhas)
+    print(f"Meses preenchidos a partir do registro bruto: {n} alterações; ainda sem meses: "
+          f"{sum(1 for a in linhas if not (a['de'] and a['para']))}.")
+
+
 def respostas():
     estado = json.load(open(ESTADO)) if os.path.exists(ESTADO) else {}
     desde = int(estado.get("respostas_lidas", 0))
@@ -77,9 +109,10 @@ def respostas():
             continue
         por_consulta[chave_cons] += 1
         m = DE_PARA.search(x.get("detalhes", ""))
+        de, para = (m[1], m[2]) if m else bruto_de_para(x.get("bruto", ""))
         a = {"id": str(x["plano"]), "estab": x["estab"], "dt": data_iso(x["data"]), "hora": x["hora"],
              "usuario": " ".join(x["usuario"].split()), "acao": x["acao"], "detalhes": x["detalhes"],
-             "de": m[1] if m else "", "para": m[2] if m else "", "fonte": "Auditoria do Belle (botão)",
+             "de": de, "para": para, "fonte": "Auditoria do Belle (botão)",
              "consultado_em": x["consultado_em"]}
         k = (a["id"], a["dt"], a["hora"], a["usuario"], a["detalhes"])
         if k not in ja:
@@ -112,4 +145,4 @@ if __name__ == "__main__":
     if not CFG.get("apps_script_url"):
         print("Planilha-ponte ainda não configurada (apps_script_url vazio em config.json); nada a fazer.")
         sys.exit(0)
-    {"respostas": respostas, "fila": fila}[sys.argv[1]]()
+    {"respostas": respostas, "fila": fila, "completar-meses": completar_meses}[sys.argv[1]]()
