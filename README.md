@@ -33,7 +33,7 @@ Por função: recepção 50 planos (55%), central 19 (21%), coordenação 17 (19
 
 ### Painel de auditoria (desde 17/11/2026)
 
-Painel **Auditoria de validade dos planos**: https://claude.ai/artifact/8cbaXTrQ3daPqc8TJdESqr (fica privado até ser compartilhado pelo menu Compartilhar).
+Painel **Auditoria de validade dos planos**: https://claude.ai/artifact/4YbjrFrJeptD5yEXG3vGYP (fica privado até ser compartilhado pelo menu Compartilhar).
 - **Toda segunda-feira (automático, desde 23/11; antes era diária):** uma rotina tira a foto da validade de todos os planos com sessões a fazer (API de integração, Sessões de Planos), compara com o dia anterior e registra cada validade que mudou (`scripts/rotina_diaria.sh`). Os dados ficam em `dados/monitor/`.
 - **Quem alterou:** só a Auditoria do Belle mostra, e ela só responde a quem está logado no navegador (testado da nuvem em 16/11: 401 "Token inválido ou bloqueado"). A gerência clica num **botão de favoritos** no Belle, que consulta a Auditoria dos planos da fila e grava o resultado numa planilha-ponte (Google Apps Script) lida pela rotina. Instalação em [botao/COMO_INSTALAR.md](botao/COMO_INSTALAR.md).
 - **Regra aplicada:** fora da regra = nova validade acima de 12 meses da venda, ou segunda alteração que aumenta a validade (decisão de 17/11: a função de quem alterou não entra na regra; o painel mostra quem alterou e a função, de `dados/monitor/funcoes.csv`, montado das planilhas do RH). "Plano já vencido" é um alerta à parte (renovar exige reavaliação e multa de 30%, que o Belle não mostra).
@@ -51,7 +51,7 @@ Painel **Auditoria de validade dos planos**: https://claude.ai/artifact/8cbaXTrQ
 
 | Material | Link / arquivo | Situação |
 |---|---|---|
-| Painel "Auditoria de validade dos planos" (atualizado todo dia) | https://claude.ai/artifact/8cbaXTrQ3daPqc8TJdESqr | **Vigente** |
+| Painel "Auditoria de validade dos planos" (atualizado toda segunda) | https://claude.ai/artifact/4YbjrFrJeptD5yEXG3vGYP | **Vigente** |
 | Apresentação "Validade do plano" (reunião com as esteticistas, 15 slides) | https://claude.ai/artifact/N6WVpPMexBvXTiEeitmrzn · PDF em `apresentacao/` | **Vigente** |
 | Alterações no Contrato (documento para a gerência) | https://claude.ai/artifact/L9v2wWCPJ7dhQ82sXT49wB | **Vigente**, aguarda decisão da gerência |
 | Planilha "Quem alterou a validade" (91 planos) | https://docs.google.com/spreadsheets/d/1xnAqRj10vH_LsChbJBa4KbcUz3YRAouUCUHCOichDKk/edit?usp=sharing · cópia sem nomes de clientes em `dados/auditoria_91_planos.csv` | **Concluída** em 09/10 |
